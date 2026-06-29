@@ -1,8 +1,7 @@
 # 微服务
 
 # 讲义网址
-
-https://b11et3un53m\.feishu\.cn/wiki/space/7229522334074372099?ccm\_open\_type=lark\_wiki\_spaceLink\&open\_tab\_from=wiki\_home
+https://my.feishu.cn/wiki/FYNkwb1i6i0qwCk7lF2caEq5nRe?chunked=false
 
 # 微服务
 
