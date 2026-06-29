@@ -1,0 +1,47 @@
+/* 自定义样式 - 个人知识库 */
+
+:root {
+  --vp-c-brand-1: #3b82f6;
+  --vp-c-brand-2: #2563eb;
+  --vp-c-brand-3: #1d4ed8;
+}
+
+.dark {
+  --vp-c-brand-1: #60a5fa;
+  --vp-c-brand-2: #3b82f6;
+  --vp-c-brand-3: #2563eb;
+}
+
+/* 首页 hero 区域优化 */
+.VPHero .name {
+  font-size: 3rem !important;
+}
+
+.VPHero .text {
+  font-size: 1.5rem !important;
+}
+
+/* 自定义信息框 */
+.custom-tip {
+  padding: 1rem;
+  border-left: 4px solid var(--vp-c-brand-1);
+  background: var(--vp-c-bg-soft);
+  border-radius: 0 8px 8px 0;
+  margin: 1rem 0;
+}
+
+/* 代码块优化 */
+.vp-code-group .tabs label {
+  font-size: 0.85rem;
+}
+
+/* 表格样式 */
+.vp-doc table {
+  width: 100%;
+  display: table;
+}
+
+/* 图片圆角 */
+.vp-doc img {
+  border-radius: 8px;
+}
