@@ -10,14 +10,14 @@ hero:
     alt: 知识库 Logo
   actions:
     - theme: brand
-      text: 开始浏览
-      link: /guide/
-    - theme: alt
       text: 刻己
       link: /engravings/
     - theme: alt
-      text: 技术笔记
-      link: /notes/
+      text: 工作
+      link: /work/
+    - theme: alt
+      text: 阅读
+      link: /reading/
     - theme: alt
       text: GitHub
       link: https://github.com/xiaowei2013-2026/xiaowei2013-2026.github.io
@@ -27,25 +27,16 @@ features:
     title: 刻己
     details: 铭刻自己 — 记录思考、碎碎念、或是偶尔冒出来的想法。
     link: /engravings/
+  - icon: 💼
+    title: 工作
+    details: 滴滴工作、后端开发、AI、工具链 — 工作中的技术积累与实践。
+    link: /work/
   - icon: 📖
-    title: 学习指南
-    details: 系统化的学习路径，从基础到进阶，循序渐进地掌握新知识。
-    link: /guide/
-  - icon: 📝
-    title: 技术笔记
-    details: 日常开发中的技术笔记、踩坑记录和最佳实践总结。
-    link: /notes/
-  - icon: 🛠️
-    title: 技能工具箱
-    details: 整理常用的工具、命令、配置模板，提升开发效率。
-    link: /skills/
-  - icon: 🔍
-    title: 全文搜索
-    details: 内置本地搜索功能，快速定位你需要的内容。
-  - icon: 🌙
-    title: 暗色模式
-    details: 支持浅色/深色主题切换，保护眼睛，提升阅读体验。
-  - icon: ⚡
-    title: Markdown 驱动
-    details: 所有内容用 Markdown 编写，简洁高效，易于维护和版本控制。
+    title: 阅读
+    details: 读书笔记、好文摘录，把读到的东西消化成自己的。
+    link: /reading/
+  - icon: 📦
+    title: 其他
+    details: 不好归类的零碎内容，总会有些东西需要一个地方放着。
+    link: /other/
 ---

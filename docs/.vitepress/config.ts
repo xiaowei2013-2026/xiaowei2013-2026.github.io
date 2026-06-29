@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: '我的知识库',
+  title: '肖威的知识库',
   description: '个人知识管理系统',
   lang: 'zh-CN',
   base: '/',  // 用户名.github.io 仓库直接使用根路径
@@ -24,9 +24,9 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '刻己', link: '/engravings/' },
-      { text: '学习指南', link: '/guide/' },
-      { text: '技术笔记', link: '/notes/' },
-      { text: '技能', link: '/skills/' },
+      { text: '工作', link: '/work/' },
+      { text: '阅读', link: '/reading/' },
+      { text: '其他', link: '/other/' },
     ],
 
     // 侧边栏
@@ -41,30 +41,31 @@ export default defineConfig({
           ],
         },
       ],
-      '/guide/': [
+      '/work/': [
         {
-          text: '学习指南',
+          text: '工作',
           items: [
-            { text: '概览', link: '/guide/' },
-            { text: '快速开始', link: '/guide/getting-started' },
+            { text: '概览', link: '/work/' },
+            { text: '滴滴工作', link: '/work/didi/' },
+            { text: '后端开发', link: '/work/backend/' },
+            { text: 'AI', link: '/work/ai/' },
+            { text: '工具链', link: '/work/toolchain/' },
           ],
         },
       ],
-      '/notes/': [
+      '/reading/': [
         {
-          text: '技术笔记',
+          text: '阅读',
           items: [
-            { text: '概览', link: '/notes/' },
-            { text: 'Markdown 语法示例', link: '/notes/markdown-demo' },
-            { text: 'VitePress 功能展示', link: '/notes/vitepress-features' },
+            { text: '概览', link: '/reading/' },
           ],
         },
       ],
-      '/skills/': [
+      '/other/': [
         {
-          text: '技能',
+          text: '其他',
           items: [
-            { text: '概览', link: '/skills/' },
+            { text: '概览', link: '/other/' },
           ],
         },
       ],
