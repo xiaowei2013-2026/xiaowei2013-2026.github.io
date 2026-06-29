@@ -275,7 +275,7 @@ dubbo:
 
 #### **服务降级**
 
-![image\.png](image-2.png)
+![image\.png](assets/image-2.png)
 
 # 注册中心
 
@@ -297,7 +297,7 @@ dubbo:
 
 #### 数据模型
 
-![image\.png](image.png)
+![image\.png](assets/image.png)
 
 这里面的每一个节点都被称为： ZNode，每个节点上都会保存自己的数据和节点信息。 
 
@@ -333,7 +333,7 @@ docker logs zookeeper\-dev
 
 ### JavaAPI操作
 
-![image\.png](image-1.png)
+![image\.png](assets/image-1.png)
 
 
 
@@ -454,7 +454,7 @@ ZooKeeper watch 不是：
 
 ### 集群
 
-![image\.png](image-3.png)
+![image\.png](assets/image-3.png)
 
 
 
