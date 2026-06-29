@@ -47,7 +47,16 @@ export default defineConfig({
           items: [
             { text: '概览', link: '/work/' },
             { text: '滴滴工作', link: '/work/didi' },
-            { text: '后端开发', link: '/work/backend' },
+            {
+              text: '后端开发',
+              link: '/work/backend/',
+              collapsed: false,
+              items: [
+                { text: '学习计划', link: '/work/backend/learning-plan' },
+                { text: '项目', link: '/work/backend/projects/' },
+                { text: '八股文', link: '/work/backend/interview/' },
+              ],
+            },
             { text: 'AI', link: '/work/ai' },
             { text: '工具链', link: '/work/toolchain' },
           ],
