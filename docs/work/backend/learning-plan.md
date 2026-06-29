@@ -4,8 +4,6 @@
 
 
 
-
-
 🏗️ 核心框架
 
 apollo
@@ -106,7 +104,6 @@ apollo
 > 这些是看懂项目代码的前提
 > 
 > 
-
 
 
 **Java 17** — 你已经会了
@@ -1128,7 +1125,7 @@ gift桶改权限需求，根据需求制定开发计划
 
 
 
-# **一、平台相关学习和底层实现**
+# 一、平台相关学习和底层实现
 
 要求：了解每一个模块的设计和代码实现，后续找时间选定一个主题安排一次组内串讲，历史串讲汇总：[http://wiki\.intra\.xiaojukeji\.com/pages/viewpage\.action?pageId=411450191](http://wiki.intra.xiaojukeji.com/pages/viewpage.action?pageId=411450191)
 
@@ -1152,11 +1149,11 @@ newton入门wiki：
 
 1\.2 关注newton答疑群以及查看聊天记录，通过用户提出的问题，跟随值班同学/桔伴了解对应的处理方式
 
-![HXxsENA3\.png](.assets/HXxsENA3.png)
+![HXxsENA3\.png](assets/HXxsENA3.png)
 
 1\.3 关注相关告警群，以及比如event服务产生的异常信息，分析解决，通过解决线上暴露的问题驱动熟悉平台的逻辑结构
 
-![uUnlC0pQ\.png](.assets/uUnlC0pQ.png)
+![uUnlC0pQ\.png](assets/uUnlC0pQ.png)
 
 1\.4 对线下stable环境所有模块、api包进行升级，同步master代码，并进行部署，熟悉newton开发的流程
 
@@ -1359,11 +1356,6 @@ Tesla平台文档：
 
 
 # 我的
-
-
-
-
-
 
 1. 笔战历史记录
 
