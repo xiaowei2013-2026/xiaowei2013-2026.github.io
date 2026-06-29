@@ -134,7 +134,7 @@ export default defineConfig({
     // 大纲标题
     outline: {
       label: '页面导航',
-      level: [2, 3],
+      level: [1, 3],
     },
 
     // 文档页脚（上一篇/下一篇）
