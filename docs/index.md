@@ -25,7 +25,7 @@ hero:
 features:
   - icon: ✍️
     title: 刻己
-    details: 铭刻自己 — 记录思考、碎碎念、或是偶尔冒出来的想法。
+    details: 雕刻自己
     link: /engravings/
   - icon: 💼
     title: 工作
