@@ -58,7 +58,7 @@ export default defineConfig({
                   link: '/work/backend/interview/',
                   collapsed: false,
                   items: [
-                    { text: '微服务', link: '/work/backend/interview/微服务/' },
+                    { text: '微服务', link: '/work/backend/interview/微服务' },
                   ],
                 },
               ],
