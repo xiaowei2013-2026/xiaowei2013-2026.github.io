@@ -36,8 +36,7 @@ export default defineConfig({
           text: '刻己',
           items: [
             { text: '概览', link: '/engravings/' },
-            { text: '什么才算"做完了"', link: '/engravings/2026-06-26-done' },
-            { text: '第一步总是最重的', link: '/engravings/2026-06-20-first-step' },
+            { text: '2026-06-29', link: '/engravings/2026-06-29' },
           ],
         },
       ],
