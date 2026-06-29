@@ -490,5 +490,4 @@ Apollo方式：
   改一次密码 → Apollo自动推送到所有服务 → 不用重启（热发布）
 ```
 
-
-
+<img src="./index.assets/image-20260629172112071.png" alt="image-20260629172112071" style="zoom:50%;" />
