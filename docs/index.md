@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "📚 我的知识库"
+  name: "📚 肖威的知识库"
   text: "个人学习 & 技术积累"
   tagline: 记录学习笔记、技术心得、项目经验
   image:
