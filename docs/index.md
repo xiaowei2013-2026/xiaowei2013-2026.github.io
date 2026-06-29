@@ -13,6 +13,9 @@ hero:
       text: 开始浏览
       link: /guide/
     - theme: alt
+      text: 刻己
+      link: /engravings/
+    - theme: alt
       text: 技术笔记
       link: /notes/
     - theme: alt
@@ -20,6 +23,10 @@ hero:
       link: https://github.com/xiaowei2013-2026/xiaowei2013-2026.github.io
 
 features:
+  - icon: ✍️
+    title: 刻己
+    details: 铭刻自己 — 记录思考、碎碎念、或是偶尔冒出来的想法。
+    link: /engravings/
   - icon: 📖
     title: 学习指南
     details: 系统化的学习路径，从基础到进阶，循序渐进地掌握新知识。
