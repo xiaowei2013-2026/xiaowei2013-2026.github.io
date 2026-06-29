@@ -23,6 +23,7 @@ export default defineConfig({
     // 导航栏
     nav: [
       { text: '首页', link: '/' },
+      { text: '刻己', link: '/engravings/' },
       { text: '学习指南', link: '/guide/' },
       { text: '技术笔记', link: '/notes/' },
       { text: '技能', link: '/skills/' },
@@ -30,6 +31,16 @@ export default defineConfig({
 
     // 侧边栏
     sidebar: {
+      '/engravings/': [
+        {
+          text: '刻己',
+          items: [
+            { text: '概览', link: '/engravings/' },
+            { text: '什么才算"做完了"', link: '/engravings/2026-06-26-done' },
+            { text: '第一步总是最重的', link: '/engravings/2026-06-20-first-step' },
+          ],
+        },
+      ],
       '/guide/': [
         {
           text: '学习指南',
