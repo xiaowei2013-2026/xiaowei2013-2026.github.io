@@ -51,16 +51,8 @@ export default defineConfig({
               link: '/work/backend/',
               collapsed: false,
               items: [
-                { text: '学习计划', link: '/work/backend/learning-plan' },
                 { text: '项目', link: '/work/backend/projects/' },
-                {
-                  text: '八股文',
-                  link: '/work/backend/interview/',
-                  collapsed: false,
-                  items: [
-                    { text: '微服务', link: '/work/backend/interview/微服务' },
-                  ],
-                },
+                { text: '八股文', link: '/work/backend/interview/' },
               ],
             },
             { text: 'AI', link: '/work/ai' },
