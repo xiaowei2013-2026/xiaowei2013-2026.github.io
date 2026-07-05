@@ -8,7 +8,7 @@ export default defineConfig({
   base: '/',  // 用户名.github.io 仓库直接使用根路径
 
   // 清理 URL（去掉 .html 后缀）
-  cleanUrls: true,
+  cleanUrls: false,
 
   // 头部配置
   head: [
