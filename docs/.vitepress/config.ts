@@ -36,6 +36,19 @@ export default defineConfig({
           text: '刻己',
           items: [
             { text: '概览', link: '/engravings/' },
+          ],
+        },
+        {
+          text: '2026年07月',
+          collapsed: true,
+          items: [
+            { text: '2026-07-05', link: '/engravings/2026-07-05' },
+          ],
+        },
+        {
+          text: '2026年06月',
+          collapsed: true,
+          items: [
             { text: '2026-06-30', link: '/engravings/2026-06-30' },
             { text: '2026-06-29', link: '/engravings/2026-06-29' },
           ],
