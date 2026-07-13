@@ -42,6 +42,10 @@ export default defineConfig({
           text: '2026年07月',
           collapsed: true,
           items: [
+            { text: '2026-07-13', link: '/engravings/2026-07-13' },
+            { text: '2026-07-09', link: '/engravings/2026-07-09' },
+            { text: '2026-07-07', link: '/engravings/2026-07-07' },
+            { text: '2026-07-06', link: '/engravings/2026-07-06' },
             { text: '2026-07-05', link: '/engravings/2026-07-05' },
           ],
         },
