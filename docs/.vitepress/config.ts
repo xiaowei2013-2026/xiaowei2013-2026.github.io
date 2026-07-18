@@ -38,20 +38,7 @@ export default defineConfig({
             { text: '概览', link: '/engravings/' },
           ],
         },
-        {
-          text: '2026年07月',
-          collapsed: true,
-          items: [
-            { text: '2026-07', link: '/engravings/2026-07' },
-          ],
-        },
-        {
-          text: '2026年06月',
-          collapsed: true,
-          items: [
-            { text: '2026-06', link: '/engravings/2026-06' },
-          ],
-        },
+        { text: '2026年', link: '/engravings/2026' },
       ],
       '/work/': [
         {

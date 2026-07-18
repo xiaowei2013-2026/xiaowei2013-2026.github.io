@@ -2,22 +2,8 @@
 
 > 雕刻自己
 
-
 ---
 
+## 2026年
 
-## 2026
-
-<details open>
-<summary>07月</summary>
-
-- [2026-07](./2026-07)
-
-</details>
-
-<details>
-<summary>06月</summary>
-
-- [2026-06](./2026-06)
-
-</details>
+- [2026年](./2026)
