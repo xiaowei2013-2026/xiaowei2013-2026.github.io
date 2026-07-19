@@ -6,7 +6,8 @@ docs/.vitepress/cache/
 微服务.zip
 .idea/
 .obsidian/
-docs/english/
-docs/reading/
-docs/work/
-docs/other/
+docs/其他/
+docs/工作/
+docs/本硕阶段/
+docs/英语/
+docs/阅读/
