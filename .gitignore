@@ -5,3 +5,5 @@ docs/.vitepress/cache/
 *.log
 微服务.zip
 .idea/
+.obsidian/
+docs/english/
