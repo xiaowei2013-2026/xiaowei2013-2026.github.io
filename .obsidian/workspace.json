@@ -1,0 +1,251 @@
+{
+  "main": {
+    "id": "b278c7912412cb8a",
+    "type": "split",
+    "children": [
+      {
+        "id": "d99e06a3be7a36a0",
+        "type": "split",
+        "children": [
+          {
+            "id": "8916d338f3f4d2ba",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "cb4ee410b4cd8e80",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "docs/index.md",
+                    "mode": "source",
+                    "source": false
+                  },
+                  "icon": "lucide-file",
+                  "title": "index"
+                }
+              },
+              {
+                "id": "5060cb738a817973",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "docs/english/英语学习规划.md",
+                    "mode": "preview",
+                    "source": false
+                  },
+                  "icon": "lucide-file",
+                  "title": "英语学习规划"
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "792c1dba1efcf9e6",
+            "type": "tabs",
+            "children": [
+              {
+                "id": "ed0449012d4a88dd",
+                "type": "leaf",
+                "state": {
+                  "type": "terminal-view",
+                  "state": {
+                    "tabs": [
+                      {
+                        "name": "Terminal 1",
+                        "color": "",
+                        "cwd": "D:\\code\\xiaowei2013-2026",
+                        "bufferSerial": "\r\n\u001b[33mTerminal binaries not installed.\r\n\u001b[0mGo to Settings → Terminal to download them.\u001b[1B\u001b[43D"
+                      },
+                      {
+                        "name": "Terminal 2",
+                        "color": "",
+                        "cwd": "D:\\code\\xiaowei2013-2026",
+                        "bufferSerial": "Microsoft Windows [版本 10.0.26200.8875]\r\n(c) Microsoft Corporation。保留所有权利。\r\n\r\nD:\\code\\xiaowei2013-2026>\u001b[?1004h"
+                      }
+                    ],
+                    "activeIndex": 1
+                  },
+                  "icon": "terminal",
+                  "title": "Terminal"
+                }
+              }
+            ]
+          }
+        ],
+        "direction": "horizontal"
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "c17bab642944330d",
+    "type": "split",
+    "children": [
+      {
+        "id": "c8f81566dc0c2827",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9cff97a3a42bbcac",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "f4e6d6e2ec4cbe5d",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "搜索"
+            }
+          },
+          {
+            "id": "959c812670b18bf6",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "书签"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "387ff2f23024da0a",
+    "type": "split",
+    "children": [
+      {
+        "id": "e61e5894868d2b52",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "32e12edc30e50b52",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "docs/english/英语学习规划.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "英语学习规划 的反向链接列表"
+            }
+          },
+          {
+            "id": "001e6675a69c5983",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "docs/english/英语学习规划.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "英语学习规划 的出链列表"
+            }
+          },
+          {
+            "id": "dd6253e67c52652b",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "标签"
+            }
+          },
+          {
+            "id": "f6b7e7d19ab425c5",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "添加笔记属性"
+            }
+          },
+          {
+            "id": "eca1f69589eedc97",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "docs/english/英语学习规划.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "英语学习规划 的大纲"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false,
+      "lean-terminal:Open terminal": false
+    }
+  },
+  "active": "ed0449012d4a88dd",
+  "lastOpenFiles": [
+    "docs/english/assets",
+    "docs/index.md",
+    "docs/english/英语学习规划.md",
+    "docs/english",
+    "docs/reading/index.md",
+    "docs/public/avatar.png",
+    "docs/engravings/index.md",
+    "docs/other/index.md"
+  ]
+}
