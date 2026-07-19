@@ -24,9 +24,6 @@ export default defineConfig({
     nav: [
       { text: '首页', link: '/' },
       { text: '刻己', link: '/engravings/' },
-      { text: '工作', link: '/work/' },
-      { text: '阅读', link: '/reading/' },
-      { text: '其他', link: '/other/' },
     ],
 
     // 侧边栏
@@ -40,42 +37,9 @@ export default defineConfig({
         },
         { text: '2026年', link: '/engravings/2026' },
       ],
-      '/work/': [
-        {
-          text: '工作',
-          items: [
-            { text: '概览', link: '/work/' },
-            { text: '滴滴工作', link: '/work/didi' },
-            {
-              text: '后端开发',
-              link: '/work/backend/',
-              collapsed: false,
-              items: [
-                { text: '项目', link: '/work/backend/projects/' },
-                { text: '八股文', link: '/work/backend/interview/' },
-              ],
-            },
-            { text: 'AI', link: '/work/ai' },
-            { text: '工具链', link: '/work/toolchain' },
-          ],
-        },
-      ],
-      '/reading/': [
-        {
-          text: '阅读',
-          items: [
-            { text: '概览', link: '/reading/' },
-          ],
-        },
-      ],
-      '/other/': [
-        {
-          text: '其他',
-          items: [
-            { text: '概览', link: '/other/' },
-          ],
-        },
-      ],
+      '/work/': [],
+      '/reading/': [],
+      '/other/': [],
     },
 
     // 社交链接
