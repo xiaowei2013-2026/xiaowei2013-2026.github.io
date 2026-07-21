@@ -11,9 +11,7 @@ export default defineConfig({
   cleanUrls: false,
 
   // 头部配置
-  head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }],
-  ],
+  head: [],
 
   // 主题配置
   themeConfig: {
@@ -37,9 +35,6 @@ export default defineConfig({
         },
         { text: '2026年', link: '/engravings/2026' },
       ],
-      '/work/': [],
-      '/reading/': [],
-      '/other/': [],
     },
 
     // 社交链接
