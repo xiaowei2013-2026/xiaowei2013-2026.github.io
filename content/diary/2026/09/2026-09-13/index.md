@@ -5,6 +5,7 @@ date: 2026-09-13T00:00:00+08:00
 tags: ["日常", "建站"]
 description: "决定从今天开始，在这里记录生活。"
 draft: false
+showHero: false
 ---
 
 今天开始搭建自己的公开日记网站。
