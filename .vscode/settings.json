@@ -1,0 +1,17 @@
+{
+  "files.exclude": {
+    "**/.git": true,
+    "**/.tools": true,
+    "**/public": true,
+    "**/resources": true,
+    "**/.hugo_build.lock": true,
+    "**/archetypes": true
+  },
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/.tools/**": true,
+    "**/public/**": true,
+    "**/resources/**": true
+  },
+  "explorer.compactFolders": true
+}
