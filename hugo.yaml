@@ -1,0 +1,26 @@
+baseURL: "https://xiaowei2013-2026.github.io/daily-journal/"
+locale: "zh-cn"
+title: "小威的日记"
+timeZone: "Asia/Shanghai"
+enableRobotsTXT: true
+hasCJKLanguage: true
+
+permalinks:
+  diary: "/diary/:year/:month/:slug/"
+
+taxonomies:
+  tag: tags
+
+params:
+  description: "记录生活，也记录时间。"
+  author: "小威"
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+
+outputs:
+  home:
+    - HTML
+    - RSS

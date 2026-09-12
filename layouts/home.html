@@ -1,0 +1,33 @@
+{{ define "main" }}
+  <section class="intro">
+    <p class="eyebrow">公开日记</p>
+    <h1>{{ site.Title }}</h1>
+    <p>{{ site.Params.description }}</p>
+  </section>
+
+  <section class="entries" aria-labelledby="latest-title">
+    <div class="section-heading">
+      <h2 id="latest-title">最近记录</h2>
+      <a href="{{ "diary/" | relURL }}">查看全部</a>
+    </div>
+    {{ $pages := where site.RegularPages "Section" "diary" }}
+    {{ range first 12 $pages }}
+      <article class="entry-card">
+        <time datetime="{{ .Date.Format "2006-01-02" }}">
+          <span>{{ .Date.Format "2006" }}</span>
+          <strong>{{ .Date.Format "01.02" }}</strong>
+        </time>
+        <div>
+          <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+          <p>{{ with .Description }}{{ . }}{{ else }}{{ .Summary | plainify | truncate 100 }}{{ end }}</p>
+          {{ with .Params.tags }}
+            <div class="tags">{{ range . }}<span>#{{ . }}</span>{{ end }}</div>
+          {{ end }}
+        </div>
+      </article>
+    {{ else }}
+      <p class="empty">第一篇日记还在路上。</p>
+    {{ end }}
+  </section>
+{{ end }}
+
