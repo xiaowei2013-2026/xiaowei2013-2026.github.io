@@ -1,4 +1,4 @@
-# 小威的日记
+# 笨小孩的日记
 
 一个使用 Hugo 构建、通过 GitHub Pages 发布的个人公开日记。
 
@@ -27,9 +27,8 @@
 hugo server -D
 ```
 
-然后打开 `http://localhost:1313/daily-journal/`。
+然后打开 `http://localhost:1313/`。
 
 ## 首次发布
 
 在 GitHub 仓库中进入 `Settings > Pages`，将 `Source` 设置为 `GitHub Actions`，然后推送 `main` 分支。
-

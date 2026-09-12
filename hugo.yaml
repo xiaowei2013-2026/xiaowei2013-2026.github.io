@@ -1,26 +1,114 @@
-baseURL: "https://xiaowei2013-2026.github.io/daily-journal/"
+baseURL: "https://xiaowei2013-2026.github.io/"
 locale: "zh-cn"
-title: "小威的日记"
+defaultContentLanguage: "zh-cn"
+title: "笨小孩的日记"
+theme: "blowfish"
 timeZone: "Asia/Shanghai"
 enableRobotsTXT: true
 hasCJKLanguage: true
+enableEmoji: true
+summaryLength: 100
+
+pagination:
+  pagerSize: 12
 
 permalinks:
   diary: "/diary/:year/:month/:slug/"
 
 taxonomies:
   tag: tags
+  category: categories
+
+outputs:
+  home: ["HTML", "RSS", "JSON"]
+
+languages:
+  zh-cn:
+    locale: "zh-cn"
+    label: "简体中文"
+    weight: 1
+    title: "笨小孩的日记"
+    params:
+      displayName: "简体中文"
+      isoCode: "zh-cn"
+      dateFormat: "2006 年 01 月 02 日"
+      description: "记录生活，也记录时间。"
+      author:
+        name: "笨小孩"
+        headline: "记录生活，也记录时间。"
+        bio: "一份缓慢生长的公开日记。"
 
 params:
-  description: "记录生活，也记录时间。"
-  author: "小威"
+  colorScheme: "ocean"
+  defaultAppearance: "light"
+  autoSwitchAppearance: true
+  enableSearch: true
+  enableCodeCopy: true
+  mainSections: ["diary"]
+  disableTextInHeader: false
+  homepage:
+    layout: "card"
+    homepageImage: "img/homepage-profile.jpg"
+    showRecent: true
+    showRecentItems: 12
+    showMoreLink: true
+    showMoreLinkDest: "diary"
+    cardView: true
+    cardViewScreenWidth: false
+  header:
+    layout: "fixed-fill-blur"
+  footer:
+    showMenu: true
+    showCopyright: true
+    showThemeAttribution: false
+    showAppearanceSwitcher: true
+    showScrollToTop: true
+  article:
+    showDate: true
+    showAuthor: false
+    showHero: true
+    heroStyle: "big"
+    showBreadcrumbs: true
+    showDraftLabel: true
+    showHeadingAnchors: true
+    showPagination: true
+    showReadingTime: true
+    showReadingProgress: true
+    showTableOfContents: true
+    showTaxonomies: true
+    showWordCount: true
+    showZenMode: true
+  list:
+    showBreadcrumbs: true
+    showSummary: true
+    showCards: true
+    groupByYear: true
+    cardView: true
+  taxonomy:
+    showTermCount: true
+    showBreadcrumbs: true
+  term:
+    showBreadcrumbs: true
+    groupByYear: true
+    cardView: true
+
+menu:
+  main:
+    - name: "日记"
+      pageRef: "diary"
+      weight: 10
+    - name: "标签"
+      pageRef: "tags"
+      weight: 20
+    - name: "关于"
+      pageRef: "about"
+      weight: 30
+  footer:
+    - name: "标签"
+      pageRef: "tags"
+      weight: 10
 
 markup:
   goldmark:
     renderer:
       unsafe: true
-
-outputs:
-  home:
-    - HTML
-    - RSS

@@ -5,7 +5,15 @@
     "**/public": true,
     "**/resources": true,
     "**/.hugo_build.lock": true,
-    "**/archetypes": true
+    "**/archetypes": true,
+    "**/assets": true,
+    "**/layouts": true,
+    "**/static": true,
+    "**/themes": true,
+    "**/.github": true,
+    "**/.gitmodules": true,
+    "**/.gitattributes": true,
+    "**/.gitignore": true
   },
   "files.watcherExclude": {
     "**/.git/**": true,
@@ -13,5 +21,6 @@
     "**/public/**": true,
     "**/resources/**": true
   },
-  "explorer.compactFolders": true
+  "explorer.compactFolders": true,
+  "explorer.sortOrder": "type"
 }
