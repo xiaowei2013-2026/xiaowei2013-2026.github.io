@@ -19,6 +19,9 @@
     "**/public/**": true,
     "**/resources/**": true
   },
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:PATH};${workspaceFolder}\\.tools\\hugo"
+  },
   "explorer.compactFolders": true,
   "explorer.sortOrder": "type"
 }
