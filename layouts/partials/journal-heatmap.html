@@ -1,0 +1,46 @@
+{{ $year := now.Year }}
+{{ $yearStart := time.AsTime (printf "%d-01-01" $year) }}
+{{ $nextYear := time.AsTime (printf "%d-01-01" (add $year 1)) }}
+{{ $dayCount := div ($nextYear.Sub $yearStart).Hours 24 }}
+{{ $days := dict }}
+
+{{ range where site.RegularPages "Section" "diary" }}
+  {{ if eq .Date.Year $year }}
+    {{ $key := .Date.Format "2006-01-02" }}
+    {{ $pages := index $days $key | default slice }}
+    {{ $days = merge $days (dict $key ($pages | append .)) }}
+  {{ end }}
+{{ end }}
+
+{{ $writtenDays := len $days }}
+<section class="journal-heatmap" aria-labelledby="journal-heatmap-title">
+  <div class="journal-heatmap__heading">
+    <div>
+      <h2 id="journal-heatmap-title">{{ $year }} 年的记录</h2>
+      <p>{{ $writtenDays }} 天留下了日记</p>
+    </div>
+    <div class="journal-heatmap__legend" aria-label="颜色越深，当天日记越多">
+      <span>少</span><i class="level-0"></i><i class="level-1"></i><i class="level-2"></i><i class="level-3"></i><span>多</span>
+    </div>
+  </div>
+  <div class="journal-heatmap__scroll" tabindex="0" aria-label="{{ $year }} 年日记热力图，可横向滚动">
+    <div class="journal-heatmap__grid">
+      {{ range seq 1 (int $yearStart.Weekday) }}<span class="journal-day journal-day--empty" aria-hidden="true"></span>{{ end }}
+      {{ range seq 0 (sub (int $dayCount) 1) }}
+        {{ $date := $yearStart.AddDate 0 0 . }}
+        {{ $key := $date.Format "2006-01-02" }}
+        {{ $pages := index $days $key | default slice }}
+        {{ $count := len $pages }}
+        {{ $level := 0 }}
+        {{ if ge $count 3 }}{{ $level = 3 }}{{ else if eq $count 2 }}{{ $level = 2 }}{{ else if eq $count 1 }}{{ $level = 1 }}{{ end }}
+        {{ $future := $date.After now }}
+        {{ if gt $count 0 }}
+          {{ $first := index $pages 0 }}
+          <a class="journal-day level-{{ $level }}" href="{{ $first.RelPermalink }}" title="{{ $date.Format "2006-01-02" }}：{{ $count }} 篇日记" aria-label="{{ $date.Format "2006 年 01 月 02 日" }}，{{ $count }} 篇日记"></a>
+        {{ else }}
+          <span class="journal-day level-0{{ if $future }} journal-day--future{{ end }}" title="{{ $date.Format "2006-01-02" }}：没有日记" aria-hidden="true"></span>
+        {{ end }}
+      {{ end }}
+    </div>
+  </div>
+</section>
