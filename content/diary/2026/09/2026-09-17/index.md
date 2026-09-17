@@ -2,7 +2,7 @@
 title: "要常与人沟通"
 slug: "17"
 date: 2026-09-17T23:00:00+08:00
-tags: ["时间"]
+tags: ["沟通","友情"]
 draft: false
 # false 表示正文顶部不额外显示封面图
 showHero: false
