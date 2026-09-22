@@ -35,7 +35,7 @@
 安装 Hugo Extended 后，在项目目录运行：
 
 ```powershell
-hugo server -D
+.\.tools\hugo\hugo.exe server -D
 ```
 
 然后打开 `http://localhost:1313/`。
@@ -51,7 +51,7 @@ python scripts/sync_anki_stats.py
 创建短文学习记录：
 
 ```powershell
-hugo new content english/study/2026/09/2026-09-23.md --kind english-study
+.\.tools\hugo\hugo.exe new content english/study/2026/09/2026-09-23.md --kind english-study
 ```
 
 ## 首次发布

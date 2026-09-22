@@ -4,7 +4,7 @@
   "tasks": {
     "version": "2.0.0",
     "tasks": [
-      { "label": "预览网站", "type": "shell", "command": "hugo server -D", "options": { "cwd": "${workspaceFolder}/../.." }, "isBackground": true, "problemMatcher": [] },
+      { "label": "预览网站", "type": "shell", "command": ".\\.tools\\hugo\\hugo.exe server -D", "options": { "cwd": "${workspaceFolder}/../.." }, "isBackground": true, "problemMatcher": [] },
       { "label": "同步 Anki 数据", "type": "shell", "command": "python scripts/sync_anki_stats.py", "options": { "cwd": "${workspaceFolder}/../.." }, "problemMatcher": [] }
     ]
   }
