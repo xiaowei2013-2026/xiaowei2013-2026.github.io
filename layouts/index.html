@@ -9,7 +9,7 @@
       {{ partial "home/profile.html" . }}
     {{ end }}
   {{ end }}
-  {{ partial "growth-heatmap.html" . }}
+  {{ partial "growth-heatmap.html" (dict "Initial" "total") }}
   <section>
     {{ partial "recent-articles/main.html" . }}
   </section>

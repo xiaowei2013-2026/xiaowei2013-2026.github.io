@@ -1,3 +1,4 @@
+{{ $initial := .Initial | default "total" }}
 {{ $year := now.Year }}
 {{ $start := time.AsTime (printf "%d-01-01" $year) }}
 {{ $next := time.AsTime (printf "%d-01-01" (add $year 1)) }}
@@ -10,9 +11,9 @@
   <div class="growth-heatmap__heading">
     <div><h2 id="growth-heatmap-title">{{ $year }} 年成长热力图</h2><p>日记与英语学习的每日积累</p></div>
     <div class="heatmap-switch" role="group" aria-label="切换热力图">
-      <button class="is-active" data-mode="total" type="button">综合</button>
-      <button data-mode="journal" type="button">日记</button>
-      <button data-mode="english" type="button">英语</button>
+      <button class="{{ if eq $initial "total" }}is-active{{ end }}" data-mode="total" type="button">综合</button>
+      <button class="{{ if eq $initial "journal" }}is-active{{ end }}" data-mode="journal" type="button">日记</button>
+      <button class="{{ if eq $initial "english" }}is-active{{ end }}" data-mode="english" type="button">英语</button>
     </div>
   </div>
   <div class="growth-heatmap__scroll" tabindex="0" aria-label="{{ $year }} 年成长热力图，可横向滚动">
@@ -44,6 +45,6 @@
   const root=document.querySelector('.growth-heatmap'); if(!root)return;
   const days=root.querySelectorAll('.growth-day[data-total]');
   function paint(mode){days.forEach(day=>{const n=Number(day.dataset[mode]||0);day.dataset.level=n<=0?0:n<25?1:n<50?2:n<75?3:4});root.querySelectorAll('button[data-mode]').forEach(b=>b.classList.toggle('is-active',b.dataset.mode===mode))}
-  root.querySelectorAll('button[data-mode]').forEach(b=>b.addEventListener('click',()=>paint(b.dataset.mode)));paint('total');
+  root.querySelectorAll('button[data-mode]').forEach(b=>b.addEventListener('click',()=>paint(b.dataset.mode)));paint('{{ $initial }}');
 })();
 </script>
