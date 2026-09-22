@@ -2,5 +2,8 @@
   "files.exclude": { "themes": true, "public": true, "resources": true, ".hugo_build.lock": true },
   "search.exclude": { "themes": true, "public": true, "resources": true },
   "files.watcherExclude": { "**/themes/**": true, "**/public/**": true, "**/resources/**": true },
+  "terminal.integrated.env.windows": {
+    "PATH": "${env:PATH};${workspaceFolder}\\.tools\\hugo"
+  },
   "explorer.compactFolders": false
 }
