@@ -1,0 +1,5 @@
+{
+  "folders": [{ "name": "每日日记", "path": "content/diary" }],
+  "settings": { "explorer.compactFolders": false },
+  "tasks": { "version": "2.0.0", "tasks": [{ "label": "预览网站", "type": "shell", "command": "hugo server -D", "options": { "cwd": "${workspaceFolder}/../.." }, "isBackground": true, "problemMatcher": [] }] }
+}

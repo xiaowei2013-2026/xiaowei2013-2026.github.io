@@ -1,4 +1,4 @@
-.journal-heatmap {
+.journal-heatmap,.growth-heatmap {
   margin: 2.5rem auto;
   max-width: 64rem;
   padding: 1.25rem;
@@ -7,12 +7,12 @@
   background: rgb(var(--color-neutral-50));
 }
 
-.dark .journal-heatmap {
+.dark .journal-heatmap,.dark .growth-heatmap {
   border-color: rgb(var(--color-neutral-700));
   background: rgb(var(--color-neutral-800));
 }
 
-.journal-heatmap__heading {
+.journal-heatmap__heading,.growth-heatmap__heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -20,16 +20,21 @@
   margin-bottom: 1rem;
 }
 
-.journal-heatmap__heading h2 { margin: 0; font-size: 1.1rem; font-weight: 650; }
-.journal-heatmap__heading p { margin: .2rem 0 0; font-size: .85rem; color: rgb(var(--color-neutral-500)); }
-.journal-heatmap__scroll { overflow-x: auto; padding: .2rem 0 .5rem; scrollbar-width: thin; }
-.journal-heatmap__grid { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; grid-auto-columns: 12px; gap: 4px; width: max-content; min-width: 100%; }
-.journal-day { width: 12px; height: 12px; border-radius: 3px; background: rgb(var(--color-neutral-200)); }
-.dark .journal-day { background: rgb(var(--color-neutral-700)); }
+.journal-heatmap__heading h2,.growth-heatmap__heading h2 { margin: 0; font-size: 1.1rem; font-weight: 650; }
+.journal-heatmap__heading p,.growth-heatmap__heading p { margin: .2rem 0 0; font-size: .85rem; color: rgb(var(--color-neutral-500)); }
+.journal-heatmap__scroll,.growth-heatmap__scroll { overflow-x: auto; padding: .2rem 0 .5rem; scrollbar-width: thin; }
+.journal-heatmap__grid,.growth-heatmap__grid { display: grid; grid-template-rows: repeat(7, 12px); grid-auto-flow: column; grid-auto-columns: 12px; gap: 4px; width: max-content; min-width: 100%; }
+.journal-day,.growth-day { width: 12px; height: 12px; border-radius: 3px; background: rgb(var(--color-neutral-200)); }
+.dark .journal-day,.dark .growth-day { background: rgb(var(--color-neutral-700)); }
 .journal-day.level-1 { background: rgb(var(--color-primary-300)); }
 .journal-day.level-2 { background: rgb(var(--color-primary-500)); }
 .journal-day.level-3 { background: rgb(var(--color-primary-700)); }
+.growth-day[data-level="1"] { background: rgb(var(--color-primary-200)); }
+.growth-day[data-level="2"] { background: rgb(var(--color-primary-400)); }
+.growth-day[data-level="3"] { background: rgb(var(--color-primary-600)); }
+.growth-day[data-level="4"] { background: rgb(var(--color-primary-800)); }
 .journal-day--future, .journal-day--empty { opacity: .25; }
+.growth-day--future, .growth-day--empty { opacity: .25; }
 a.journal-day { outline-offset: 2px; transition: transform .15s ease, box-shadow .15s ease; }
 a.journal-day:hover, a.journal-day:focus-visible { transform: scale(1.35); box-shadow: 0 0 0 2px rgb(var(--color-neutral-50)); }
 .journal-heatmap__legend { display: flex; align-items: center; gap: 4px; flex: none; font-size: .72rem; color: rgb(var(--color-neutral-500)); }
@@ -38,9 +43,14 @@ a.journal-day:hover, a.journal-day:focus-visible { transform: scale(1.35); box-s
 .journal-heatmap__legend .level-1 { background: rgb(var(--color-primary-300)); }
 .journal-heatmap__legend .level-2 { background: rgb(var(--color-primary-500)); }
 .journal-heatmap__legend .level-3 { background: rgb(var(--color-primary-700)); }
+.growth-heatmap__legend { display:flex;justify-content:flex-end;align-items:center;gap:4px;margin-top:.5rem;font-size:.72rem;color:rgb(var(--color-neutral-500)); }
+.growth-heatmap__legend i { display:block;width:10px;height:10px;border-radius:2px; }
+.growth-heatmap__legend .level-0 { background:rgb(var(--color-neutral-200)); }.growth-heatmap__legend .level-1 { background:rgb(var(--color-primary-200)); }.growth-heatmap__legend .level-2 { background:rgb(var(--color-primary-400)); }.growth-heatmap__legend .level-3 { background:rgb(var(--color-primary-600)); }.growth-heatmap__legend .level-4 { background:rgb(var(--color-primary-800)); }
+.heatmap-switch { display:flex;padding:3px;border-radius:.7rem;background:rgb(var(--color-neutral-100));gap:2px; }.dark .heatmap-switch { background:rgb(var(--color-neutral-700)); }.heatmap-switch button { border:0;border-radius:.5rem;padding:.35rem .7rem;background:transparent;color:inherit;cursor:pointer;font-size:.8rem; }.heatmap-switch button.is-active { background:rgb(var(--color-primary-500));color:white; }
 
 @media (max-width: 640px) {
   .journal-heatmap { margin-block: 1.75rem; padding: 1rem; }
   .journal-heatmap__heading { align-items: start; }
+  .growth-heatmap__heading { align-items:start;flex-direction:column; }
   .journal-heatmap__legend { display: none; }
 }

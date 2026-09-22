@@ -1,7 +1,7 @@
 baseURL: "https://xiaowei2013-2026.github.io/"
 locale: "zh-cn"
 defaultContentLanguage: "zh-cn"
-title: "威的日记"
+title: "威的成长记录"
 theme: "blowfish"
 timeZone: "Asia/Shanghai"
 enableRobotsTXT: true
@@ -14,6 +14,7 @@ pagination:
 
 permalinks:
   diary: "/diary/:year/:month/:slug/"
+  english: "/english/:sections/:slug/"
 
 taxonomies:
   tag: tags
@@ -27,16 +28,16 @@ languages:
     locale: "zh-cn"
     label: "简体中文"
     weight: 1
-    title: "威的日记"
+    title: "威的成长记录"
     params:
       displayName: "简体中文"
       isoCode: "zh-cn"
       dateFormat: "2006 年 01 月 02 日"
-      description: "记录生活，也记录时间。"
+      description: "记录日常，也积累英语。"
       author:
         name: "威"
-        headline: "记录生活，也记录时间。"
-        bio: "一份缓慢生长的公开日记。"
+        headline: "记录日常，也积累英语。"
+        bio: "日记与英语学习的长期记录。"
 
 params:
   colorScheme: "ocean"
@@ -44,7 +45,7 @@ params:
   autoSwitchAppearance: true
   enableSearch: true
   enableCodeCopy: true
-  mainSections: ["diary"]
+  mainSections: ["diary", "english"]
   disableTextInHeader: false
   homepage:
     layout: "card"
@@ -97,12 +98,15 @@ menu:
     - name: "日记"
       pageRef: "diary"
       weight: 10
+    - name: "英语"
+      pageRef: "english"
+      weight: 20
     - name: "标签"
       pageRef: "tags"
-      weight: 20
+      weight: 30
     - name: "关于"
       pageRef: "about"
-      weight: 30
+      weight: 40
   footer:
     - name: "标签"
       pageRef: "tags"

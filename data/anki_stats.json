@@ -1,0 +1,122 @@
+{
+  "2026-03-25": {
+    "reviews": 11,
+    "unique_cards": 11,
+    "new_cards": 11,
+    "minutes": 1
+  },
+  "2026-03-26": {
+    "reviews": 95,
+    "unique_cards": 31,
+    "new_cards": 20,
+    "minutes": 12
+  },
+  "2026-04-04": {
+    "reviews": 6,
+    "unique_cards": 6,
+    "new_cards": 0,
+    "minutes": 3
+  },
+  "2026-04-24": {
+    "reviews": 53,
+    "unique_cards": 38,
+    "new_cards": 7,
+    "minutes": 6
+  },
+  "2026-05-19": {
+    "reviews": 24,
+    "unique_cards": 10,
+    "new_cards": 0,
+    "minutes": 12
+  },
+  "2026-05-22": {
+    "reviews": 31,
+    "unique_cards": 26,
+    "new_cards": 0,
+    "minutes": 9
+  },
+  "2026-05-23": {
+    "reviews": 11,
+    "unique_cards": 11,
+    "new_cards": 0,
+    "minutes": 2
+  },
+  "2026-05-24": {
+    "reviews": 90,
+    "unique_cards": 43,
+    "new_cards": 8,
+    "minutes": 24
+  },
+  "2026-05-26": {
+    "reviews": 137,
+    "unique_cards": 54,
+    "new_cards": 20,
+    "minutes": 24
+  },
+  "2026-05-27": {
+    "reviews": 147,
+    "unique_cards": 44,
+    "new_cards": 35,
+    "minutes": 25
+  },
+  "2026-05-28": {
+    "reviews": 8,
+    "unique_cards": 8,
+    "new_cards": 2,
+    "minutes": 1
+  },
+  "2026-07-10": {
+    "reviews": 1,
+    "unique_cards": 1,
+    "new_cards": 0,
+    "minutes": 0
+  },
+  "2026-08-23": {
+    "reviews": 19,
+    "unique_cards": 14,
+    "new_cards": 1,
+    "minutes": 5
+  },
+  "2026-09-07": {
+    "reviews": 1,
+    "unique_cards": 1,
+    "new_cards": 0,
+    "minutes": 1
+  },
+  "2026-09-10": {
+    "reviews": 2,
+    "unique_cards": 2,
+    "new_cards": 2,
+    "minutes": 1
+  },
+  "2026-09-11": {
+    "reviews": 101,
+    "unique_cards": 23,
+    "new_cards": 21,
+    "minutes": 7
+  },
+  "2026-09-12": {
+    "reviews": 104,
+    "unique_cards": 54,
+    "new_cards": 20,
+    "minutes": 7
+  },
+  "2026-09-13": {
+    "reviews": 282,
+    "unique_cards": 153,
+    "new_cards": 24,
+    "minutes": 12
+  },
+  "2026-09-14": {
+    "reviews": 118,
+    "unique_cards": 76,
+    "new_cards": 13,
+    "minutes": 18
+  },
+  "2026-09-15": {
+    "reviews": 5,
+    "unique_cards": 5,
+    "new_cards": 0,
+    "minutes": 1
+  }
+}

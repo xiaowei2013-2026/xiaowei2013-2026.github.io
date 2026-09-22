@@ -1,0 +1,49 @@
+{{ $year := now.Year }}
+{{ $start := time.AsTime (printf "%d-01-01" $year) }}
+{{ $next := time.AsTime (printf "%d-01-01" (add $year 1)) }}
+{{ $dayCount := div ($next.Sub $start).Hours 24 }}
+{{ $diaries := dict }}{{ $studyLogs := dict }}
+{{ range where site.RegularPages "Section" "diary" }}{{ if eq .Date.Year $year }}{{ $key := .Date.Format "2006-01-02" }}{{ $items := index $diaries $key | default slice }}{{ $diaries = merge $diaries (dict $key ($items | append .)) }}{{ end }}{{ end }}
+{{ range where site.RegularPages "Section" "english" }}{{ if and (eq .Date.Year $year) (eq .CurrentSection.RelPermalink "/english/study/") }}{{ $studyLogs = merge $studyLogs (dict (.Date.Format "2006-01-02") .) }}{{ end }}{{ end }}
+
+<section class="growth-heatmap" aria-labelledby="growth-heatmap-title">
+  <div class="growth-heatmap__heading">
+    <div><h2 id="growth-heatmap-title">{{ $year }} 年成长热力图</h2><p>日记与英语学习的每日积累</p></div>
+    <div class="heatmap-switch" role="group" aria-label="切换热力图">
+      <button class="is-active" data-mode="total" type="button">综合</button>
+      <button data-mode="journal" type="button">日记</button>
+      <button data-mode="english" type="button">英语</button>
+    </div>
+  </div>
+  <div class="growth-heatmap__scroll" tabindex="0" aria-label="{{ $year }} 年成长热力图，可横向滚动">
+    <div class="growth-heatmap__grid">
+      {{ range seq 1 (int $start.Weekday) }}<span class="growth-day growth-day--empty" aria-hidden="true"></span>{{ end }}
+      {{ range seq 0 (sub (int $dayCount) 1) }}
+        {{ $date := $start.AddDate 0 0 . }}{{ $key := $date.Format "2006-01-02" }}
+        {{ $diaryPages := index $diaries $key | default slice }}{{ $diaryCount := len $diaryPages }}
+        {{ $anki := index hugo.Data.anki_stats $key | default dict }}
+        {{ $new := int (index $anki "new_cards" | default 0) }}{{ $unique := int (index $anki "unique_cards" | default 0) }}{{ $reviews := int (index $anki "reviews" | default 0) }}{{ $ankiMinutes := int (index $anki "minutes" | default 0) }}
+        {{ $log := index $studyLogs $key }}{{ $passages := 0 }}{{ $passageMinutes := 0 }}{{ with $log }}{{ $passages = int (.Params.passages | default 0) }}{{ $passageMinutes = int (.Params.passage_minutes | default 0) }}{{ end }}
+        {{ $journalScore := 0 }}{{ if gt $diaryCount 0 }}{{ $journalScore = 100 }}{{ end }}
+        {{ $wordPoints := add (mul $new 2) (div $unique 2) }}{{ if gt $wordPoints 50 }}{{ $wordPoints = 50 }}{{ end }}
+        {{ $passagePoints := add (mul $passages 10) $passageMinutes }}{{ if gt $passagePoints 20 }}{{ $passagePoints = 20 }}{{ end }}
+        {{ $englishPoints := add $wordPoints $passagePoints }}{{ $englishScore := div (mul $englishPoints 100) 70 }}{{ if gt $englishScore 100 }}{{ $englishScore = 100 }}{{ end }}
+        {{ $total := add (div (mul $journalScore 30) 100) $englishPoints }}{{ if gt $total 100 }}{{ $total = 100 }}{{ end }}
+        {{ $future := $date.After now }}
+        {{ $title := printf "%s｜综合 %d｜日记 %d 篇｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、短文 %d 篇（%d 分钟）" $key $total $diaryCount $new $unique $reviews $ankiMinutes $passages $passageMinutes }}
+        {{ $href := "" }}{{ if gt $diaryCount 0 }}{{ $href = (index $diaryPages 0).RelPermalink }}{{ else if $log }}{{ $href = $log.RelPermalink }}{{ end }}
+        {{ if $href }}<a class="growth-day" href="{{ $href }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" title="{{ $title }}" aria-label="{{ $title }}"></a>
+        {{ else }}<span class="growth-day{{ if $future }} growth-day--future{{ end }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" title="{{ $title }}" aria-hidden="{{ eq $total 0 }}"></span>{{ end }}
+      {{ end }}
+    </div>
+  </div>
+  <div class="growth-heatmap__legend"><span>少</span><i class="level-0"></i><i class="level-1"></i><i class="level-2"></i><i class="level-3"></i><i class="level-4"></i><span>多</span></div>
+</section>
+<script>
+(() => {
+  const root=document.querySelector('.growth-heatmap'); if(!root)return;
+  const days=root.querySelectorAll('.growth-day[data-total]');
+  function paint(mode){days.forEach(day=>{const n=Number(day.dataset[mode]||0);day.dataset.level=n<=0?0:n<25?1:n<50?2:n<75?3:4});root.querySelectorAll('button[data-mode]').forEach(b=>b.classList.toggle('is-active',b.dataset.mode===mode))}
+  root.querySelectorAll('button[data-mode]').forEach(b=>b.addEventListener('click',()=>paint(b.dataset.mode)));paint('total');
+})();
+</script>

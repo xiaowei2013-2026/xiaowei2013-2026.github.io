@@ -1,6 +1,17 @@
-# 威的日记
+# 威的成长记录
 
-一个使用 Hugo 构建、通过 GitHub Pages 发布的个人公开日记。
+一个使用 Hugo 构建、通过 GitHub Pages 发布的个人成长网站，目前包括日记和英语学习。
+
+网站：<https://xiaowei2013-2026.github.io/>
+
+## 内容目录
+
+- `content/diary/`：每日日记
+- `content/english/study/`：短文与每日英语学习记录
+- `content/english/notes/`：英语笔记
+- `content/english/exercises/`：英语题目、错题和解析
+
+平时可以打开 `日记编辑.code-workspace` 或 `英语编辑.code-workspace`，只显示对应内容。
 
 ## 写一篇新日记
 
@@ -28,6 +39,20 @@ hugo server -D
 ```
 
 然后打开 `http://localhost:1313/`。
+
+## 同步 Anki 热力图
+
+```powershell
+python scripts/sync_anki_stats.py
+```
+
+脚本默认统计“英语”及其子牌组，只导出日期、新学数量、复习数量和用时，不上传卡片内容或 Anki 数据库。
+
+创建短文学习记录：
+
+```powershell
+hugo new content english/study/2026/09/2026-09-23.md --kind english-study
+```
 
 ## 首次发布
 

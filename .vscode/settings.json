@@ -1,27 +1,6 @@
 {
-  "files.exclude": {
-    "**/.git": true,
-    "**/.tools": true,
-    "**/public": true,
-    "**/resources": true,
-    "**/.hugo_build.lock": true,
-    "**/archetypes": true,
-    "**/layouts": true,
-    "**/themes": true,
-    "**/.github": true,
-    "**/.gitmodules": true,
-    "**/.gitattributes": true,
-    "**/.gitignore": true
-  },
-  "files.watcherExclude": {
-    "**/.git/**": true,
-    "**/.tools/**": true,
-    "**/public/**": true,
-    "**/resources/**": true
-  },
-  "terminal.integrated.env.windows": {
-    "PATH": "${env:PATH};${workspaceFolder}\\.tools\\hugo"
-  },
-  "explorer.compactFolders": true,
-  "explorer.sortOrder": "type"
+  "files.exclude": { "themes": true, "public": true, "resources": true, ".hugo_build.lock": true },
+  "search.exclude": { "themes": true, "public": true, "resources": true },
+  "files.watcherExclude": { "**/themes/**": true, "**/public/**": true, "**/resources/**": true },
+  "explorer.compactFolders": false
 }
