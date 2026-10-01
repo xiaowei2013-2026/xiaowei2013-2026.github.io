@@ -1,0 +1,13 @@
+{{ $id := .Page.Params.book_id | default "" }}
+{{ $books := where (where site.RegularPages "Params.entry_type" "book") "Params.book_id" $id }}
+{{ if gt (len $books) 0 }}
+  {{ $book := index $books 0 }}
+  <aside class="reading-book-link">
+    <span>本次阅读</span>
+    <a href="{{ $book.RelPermalink }}">《{{ $book.Title }}》</a>
+    {{ with $book.Params.author }}<span>· {{ . }}</span>{{ end }}
+    <span>· {{ $book.CurrentSection.Title }}</span>
+  </aside>
+{{ else }}
+  <aside class="reading-book-link">请填写有效的 book_id，关联书籍页。</aside>
+{{ end }}

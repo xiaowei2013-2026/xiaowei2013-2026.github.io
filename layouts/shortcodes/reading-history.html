@@ -1,0 +1,17 @@
+{{ $id := .Page.Params.book_id | default "" }}
+{{ $logs := where (where site.RegularPages "Params.entry_type" "reading-log") "Params.book_id" $id }}
+{{ $totalMinutes := 0 }}
+{{ range $logs }}{{ $totalMinutes = add $totalMinutes (int (.Params.reading_minutes | default 0)) }}{{ end }}
+<section class="reading-history">
+  <h2>阅读日期</h2>
+  {{ if gt (len $logs) 0 }}
+    <p>共记录 {{ len $logs }} 天，{{ $totalMinutes }} 分钟。</p>
+    <ul>
+      {{ range $logs.ByDate.Reverse }}
+        <li><a href="{{ .RelPermalink }}"><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time></a> · {{ .Params.reading_minutes | default 0 }} 分钟{{ with .Params.pages }} · {{ . }} 页{{ end }}</li>
+      {{ end }}
+    </ul>
+  {{ else }}
+    <p>还没有这本书的阅读记录。</p>
+  {{ end }}
+</section>

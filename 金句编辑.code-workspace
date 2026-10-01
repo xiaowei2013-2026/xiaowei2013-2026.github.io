@@ -1,0 +1,11 @@
+{
+  "folders": [{ "name": "每日金句", "path": "content/quotes" }],
+  "settings": { "explorer.compactFolders": false },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      { "label": "预览网站", "type": "shell", "command": ".\\.tools\\hugo\\hugo.exe server -D", "options": { "cwd": "${workspaceFolder}/../.." }, "isBackground": true, "problemMatcher": [] },
+      { "label": "检查重复金句", "type": "shell", "command": "python scripts/check_quotes.py", "options": { "cwd": "${workspaceFolder}/../.." }, "problemMatcher": [] }
+    ]
+  }
+}

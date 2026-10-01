@@ -47,6 +47,20 @@ a.journal-day:hover, a.journal-day:focus-visible { transform: scale(1.35); box-s
 .growth-heatmap__legend i { display:block;width:10px;height:10px;border-radius:2px; }
 .growth-heatmap__legend .level-0 { background:rgb(var(--color-neutral-200)); }.growth-heatmap__legend .level-1 { background:rgb(var(--color-primary-200)); }.growth-heatmap__legend .level-2 { background:rgb(var(--color-primary-400)); }.growth-heatmap__legend .level-3 { background:rgb(var(--color-primary-600)); }.growth-heatmap__legend .level-4 { background:rgb(var(--color-primary-800)); }
 .heatmap-switch { display:flex;padding:3px;border-radius:.7rem;background:rgb(var(--color-neutral-100));gap:2px; }.dark .heatmap-switch { background:rgb(var(--color-neutral-700)); }.heatmap-switch button { border:0;border-radius:.5rem;padding:.35rem .7rem;background:transparent;color:inherit;cursor:pointer;font-size:.8rem; }.heatmap-switch button.is-active { background:rgb(var(--color-primary-500));color:white; }
+.heatmap-switch { flex-wrap: wrap; }
+
+.daily-quote { margin: 2rem auto; max-width: 64rem; padding: 1.5rem; border: 1px solid rgb(var(--color-neutral-200)); border-radius: 1rem; background: rgb(var(--color-neutral-50)); }
+.dark .daily-quote { border-color: rgb(var(--color-neutral-700)); background: rgb(var(--color-neutral-800)); }
+.daily-quote__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.daily-quote__heading h2 { margin: 0; font-size: 1.1rem; font-weight: 650; }
+.daily-quote__heading a { font-size: .85rem; }
+.daily-quote blockquote { margin: 1rem 0 .5rem; font-size: clamp(1.2rem, 2vw, 1.55rem); line-height: 1.65; font-weight: 500; }
+.daily-quote__source { margin: 0; text-align: right; color: rgb(var(--color-neutral-500)); font-size: .9rem; }
+
+.reading-book-link { display: flex; flex-wrap: wrap; gap: .25rem; align-items: baseline; margin: 1rem 0; padding: .75rem 1rem; border-radius: .75rem; background: rgb(var(--color-neutral-100)); font-size: .9rem; }
+.dark .reading-book-link { background: rgb(var(--color-neutral-700)); }
+.reading-history ul { padding-left: 1.3rem; }
+.reading-history li { margin: .35rem 0; }
 
 @media (max-width: 640px) {
   .journal-heatmap { margin-block: 1.75rem; padding: 1rem; }

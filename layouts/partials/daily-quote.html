@@ -1,0 +1,16 @@
+{{ $latest := false }}
+{{ range (where site.RegularPages "Section" "quotes").ByDate.Reverse }}
+  {{ if and (not $latest) (not (.Date.After now)) .Params.quote }}{{ $latest = . }}{{ end }}
+{{ end }}
+<section class="daily-quote" aria-labelledby="daily-quote-title">
+  <div class="daily-quote__heading">
+    <h2 id="daily-quote-title">{{ if and $latest (eq ($latest.Date.Format "2006-01-02") (now.Format "2006-01-02")) }}今日金句{{ else }}最近金句{{ end }}</h2>
+    <a href="{{ relURL "quotes/" }}">查看全部</a>
+  </div>
+  {{ with $latest }}
+    <blockquote>{{ .Params.quote }}</blockquote>
+    <p class="daily-quote__source">{{ if or .Params.author .Params.work }}— {{ .Params.author }}{{ with .Params.work }}《{{ . }}》{{ end }} · {{ end }}<a href="{{ .RelPermalink }}">{{ .Date.Format "2006-01-02" }}</a></p>
+  {{ else }}
+    <p>还没有收录金句，可以从喜欢的诗词、书或电影中选一句开始。</p>
+  {{ end }}
+</section>

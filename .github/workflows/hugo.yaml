@@ -34,6 +34,10 @@ jobs:
         uses: actions/configure-pages@v6
         with:
           enablement: true
+      - name: Check daily quotes
+        run: python3 scripts/check_quotes.py
+      - name: Check reading records
+        run: python3 scripts/check_reading.py
       - name: Build
         run: hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
       - name: Upload site

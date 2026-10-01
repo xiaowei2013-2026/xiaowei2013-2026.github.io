@@ -3,17 +3,19 @@
 {{ $start := time.AsTime (printf "%d-01-01" $year) }}
 {{ $next := time.AsTime (printf "%d-01-01" (add $year 1)) }}
 {{ $dayCount := div ($next.Sub $start).Hours 24 }}
-{{ $diaries := dict }}{{ $studyLogs := dict }}
+{{ $diaries := dict }}{{ $studyLogs := dict }}{{ $readingLogs := dict }}
 {{ range where site.RegularPages "Section" "diary" }}{{ if eq .Date.Year $year }}{{ $key := .Date.Format "2006-01-02" }}{{ $items := index $diaries $key | default slice }}{{ $diaries = merge $diaries (dict $key ($items | append .)) }}{{ end }}{{ end }}
 {{ range where site.RegularPages "Section" "english" }}{{ if and (eq .Date.Year $year) (eq .CurrentSection.RelPermalink "/english/study/") }}{{ $studyLogs = merge $studyLogs (dict (.Date.Format "2006-01-02") .) }}{{ end }}{{ end }}
+{{ range where site.RegularPages "Section" "reading" }}{{ if and (eq .Date.Year $year) (eq .CurrentSection.RelPermalink "/reading/logs/") }}{{ $key := .Date.Format "2006-01-02" }}{{ $items := index $readingLogs $key | default slice }}{{ $readingLogs = merge $readingLogs (dict $key ($items | append .)) }}{{ end }}{{ end }}
 
 <section class="growth-heatmap" aria-labelledby="growth-heatmap-title">
   <div class="growth-heatmap__heading">
-    <div><h2 id="growth-heatmap-title">{{ $year }} 年成长热力图</h2><p>日记与英语学习的每日积累</p></div>
+    <div><h2 id="growth-heatmap-title">{{ $year }} 年成长热力图</h2><p>日记、英语与阅读的每日积累</p></div>
     <div class="heatmap-switch" role="group" aria-label="切换热力图">
       <button class="{{ if eq $initial "total" }}is-active{{ end }}" data-mode="total" type="button">综合</button>
       <button class="{{ if eq $initial "journal" }}is-active{{ end }}" data-mode="journal" type="button">日记</button>
       <button class="{{ if eq $initial "english" }}is-active{{ end }}" data-mode="english" type="button">英语</button>
+      <button class="{{ if eq $initial "reading" }}is-active{{ end }}" data-mode="reading" type="button">阅读</button>
     </div>
   </div>
   <div class="growth-heatmap__scroll" tabindex="0" aria-label="{{ $year }} 年成长热力图，可横向滚动">
@@ -25,16 +27,23 @@
         {{ $anki := index hugo.Data.anki_stats $key | default dict }}
         {{ $new := int (index $anki "new_cards" | default 0) }}{{ $unique := int (index $anki "unique_cards" | default 0) }}{{ $reviews := int (index $anki "reviews" | default 0) }}{{ $ankiMinutes := int (index $anki "minutes" | default 0) }}
         {{ $log := index $studyLogs $key }}{{ $passages := 0 }}{{ $passageMinutes := 0 }}{{ with $log }}{{ $passages = int (.Params.passages | default 0) }}{{ $passageMinutes = int (.Params.passage_minutes | default 0) }}{{ end }}
+        {{ $readPages := index $readingLogs $key | default slice }}{{ $readMinutes := 0 }}{{ $readPageCount := 0 }}
+        {{ range $readPages }}{{ $readMinutes = add $readMinutes (int (.Params.reading_minutes | default 0)) }}{{ $readPageCount = add $readPageCount (int (.Params.pages | default 0)) }}{{ end }}
+        {{ if lt $readMinutes 0 }}{{ $readMinutes = 0 }}{{ end }}
         {{ $journalScore := 0 }}{{ if gt $diaryCount 0 }}{{ $journalScore = 100 }}{{ end }}
         {{ $wordPoints := add (mul $new 2) (div $unique 2) }}{{ if gt $wordPoints 50 }}{{ $wordPoints = 50 }}{{ end }}
         {{ $passagePoints := add (mul $passages 10) $passageMinutes }}{{ if gt $passagePoints 20 }}{{ $passagePoints = 20 }}{{ end }}
         {{ $englishPoints := add $wordPoints $passagePoints }}{{ $englishScore := div (mul $englishPoints 100) 70 }}{{ if gt $englishScore 100 }}{{ $englishScore = 100 }}{{ end }}
-        {{ $total := add (div (mul $journalScore 30) 100) $englishPoints }}{{ if gt $total 100 }}{{ $total = 100 }}{{ end }}
+        {{ $readingScore := div (mul $readMinutes 100) 30 }}{{ if gt $readingScore 100 }}{{ $readingScore = 100 }}{{ end }}
+        {{ $total := add (add (div (mul $journalScore 30) 100) (div (mul $englishScore 50) 100)) (div (mul $readingScore 20) 100) }}
         {{ $future := $date.After now }}
-        {{ $title := printf "%s｜综合 %d｜日记 %d 篇｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、短文 %d 篇（%d 分钟）" $key $total $diaryCount $new $unique $reviews $ankiMinutes $passages $passageMinutes }}
-        {{ $href := "" }}{{ if gt $diaryCount 0 }}{{ $href = (index $diaryPages 0).RelPermalink }}{{ else if $log }}{{ $href = $log.RelPermalink }}{{ end }}
-        {{ if $href }}<a class="growth-day" href="{{ $href }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" title="{{ $title }}" aria-label="{{ $title }}"></a>
-        {{ else }}<span class="growth-day{{ if $future }} growth-day--future{{ end }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" title="{{ $title }}" aria-hidden="{{ eq $total 0 }}"></span>{{ end }}
+        {{ $title := printf "%s｜综合 %d｜日记 %d 篇｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、短文 %d 篇（%d 分钟）｜阅读 %d 分钟、%d 页" $key $total $diaryCount $new $unique $reviews $ankiMinutes $passages $passageMinutes $readMinutes $readPageCount }}
+        {{ $journalHref := "" }}{{ if gt $diaryCount 0 }}{{ $journalHref = (index $diaryPages 0).RelPermalink }}{{ end }}
+        {{ $englishHref := "" }}{{ with $log }}{{ $englishHref = .RelPermalink }}{{ end }}
+        {{ $readingHref := "" }}{{ if gt (len $readPages) 0 }}{{ $readingHref = (index $readPages 0).RelPermalink }}{{ end }}
+        {{ $totalHref := $journalHref }}{{ if not $totalHref }}{{ $totalHref = $englishHref }}{{ end }}{{ if not $totalHref }}{{ $totalHref = $readingHref }}{{ end }}
+        {{ if $totalHref }}<a class="growth-day" href="{{ $totalHref }}" data-link-total="{{ $totalHref }}" data-link-journal="{{ $journalHref }}" data-link-english="{{ $englishHref }}" data-link-reading="{{ $readingHref }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" title="{{ $title }}" aria-label="{{ $title }}"></a>
+        {{ else }}<span class="growth-day{{ if $future }} growth-day--future{{ end }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" title="{{ $title }}" aria-hidden="{{ eq $total 0 }}"></span>{{ end }}
       {{ end }}
     </div>
   </div>
@@ -44,7 +53,18 @@
 (() => {
   const root=document.querySelector('.growth-heatmap'); if(!root)return;
   const days=root.querySelectorAll('.growth-day[data-total]');
-  function paint(mode){days.forEach(day=>{const n=Number(day.dataset[mode]||0);day.dataset.level=n<=0?0:n<25?1:n<50?2:n<75?3:4});root.querySelectorAll('button[data-mode]').forEach(b=>b.classList.toggle('is-active',b.dataset.mode===mode))}
+  function paint(mode){
+    const linkKey={total:'linkTotal',journal:'linkJournal',english:'linkEnglish',reading:'linkReading'}[mode];
+    days.forEach(day=>{
+      const n=Number(day.dataset[mode]||0);
+      day.dataset.level=n<=0?0:n<25?1:n<50?2:n<75?3:4;
+      if(day.tagName==='A'){
+        const href=day.dataset[linkKey];
+        if(href)day.setAttribute('href',href);else day.removeAttribute('href');
+      }
+    });
+    root.querySelectorAll('button[data-mode]').forEach(b=>b.classList.toggle('is-active',b.dataset.mode===mode));
+  }
   root.querySelectorAll('button[data-mode]').forEach(b=>b.addEventListener('click',()=>paint(b.dataset.mode)));paint('{{ $initial }}');
 })();
 </script>

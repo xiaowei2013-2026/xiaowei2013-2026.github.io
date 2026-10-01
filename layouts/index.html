@@ -10,6 +10,7 @@
     {{ end }}
   {{ end }}
   {{ partial "growth-heatmap.html" (dict "Initial" "total") }}
+  {{ partial "daily-quote.html" . }}
   <section>
     {{ partial "recent-articles/main.html" . }}
   </section>

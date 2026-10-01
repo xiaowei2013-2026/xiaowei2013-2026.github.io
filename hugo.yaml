@@ -33,11 +33,11 @@ languages:
       displayName: "简体中文"
       isoCode: "zh-cn"
       dateFormat: "2006 年 01 月 02 日"
-      description: "记录日常，也积累英语。"
+      description: "记录日常、英语与阅读。"
       author:
         name: "威"
-        headline: "记录日常，也积累英语。"
-        bio: "日记与英语学习的长期记录。"
+        headline: "记录日常、英语与阅读。"
+        bio: "日记、英语学习与阅读的长期记录。"
 
 params:
   colorScheme: "ocean"
@@ -45,7 +45,7 @@ params:
   autoSwitchAppearance: true
   enableSearch: true
   enableCodeCopy: true
-  mainSections: ["diary", "english"]
+  mainSections: ["diary", "english", "reading"]
   disableTextInHeader: false
   homepage:
     layout: "card"
@@ -101,12 +101,15 @@ menu:
     - name: "英语"
       pageRef: "english"
       weight: 20
+    - name: "阅读"
+      pageRef: "reading"
+      weight: 30
     - name: "标签"
       pageRef: "tags"
-      weight: 30
+      weight: 40
     - name: "关于"
       pageRef: "about"
-      weight: 40
+      weight: 50
   footer:
     - name: "标签"
       pageRef: "tags"
