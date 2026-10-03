@@ -45,7 +45,7 @@ params:
   autoSwitchAppearance: true
   enableSearch: true
   enableCodeCopy: true
-  mainSections: ["diary", "english", "reading"]
+  mainSections: ["diary", "english", "reading", "other"]
   disableTextInHeader: false
   homepage:
     layout: "card"
@@ -107,6 +107,9 @@ menu:
     - name: "标签"
       pageRef: "tags"
       weight: 40
+    - name: "其他"
+      pageRef: "other"
+      weight: 35
     - name: "关于"
       pageRef: "about"
       weight: 50
