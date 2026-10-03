@@ -1,7 +1,7 @@
 ---
-title: "打字"
-description: "打字练习与进步记录。"
+title: "五笔打字"
+description: "五笔打字学习、练习与进步记录。"
 showHero: false
 ---
 
-记录打字练习、速度和准确率。
+记录五笔字根学习、打字练习、速度和准确率。
