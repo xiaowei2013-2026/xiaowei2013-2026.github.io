@@ -1,0 +1,17 @@
+.typing-chart { margin: 2rem 0; padding: 1.2rem; border: 1px solid rgb(var(--color-neutral-300)); border-radius: 1rem; }
+.typing-chart h2 { margin-top: 0; }
+.typing-chart__tools { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
+.typing-chart__tools input { display: block; max-width: 100%; font-size: .85rem; }
+.typing-chart__tools button { padding: .4rem .8rem; border: 1px solid currentColor; border-radius: .4rem; }
+.typing-chart__tools button:disabled { opacity: .4; }
+.typing-chart__hint { font-size: .85rem; opacity: .75; }
+.typing-chart__scroll { overflow-x: auto; }
+.typing-chart svg { width: 100%; min-width: 650px; height: auto; }
+.typing-chart svg text { fill: currentColor; font: 12px sans-serif; }
+.typing-chart .chart-grid { stroke: currentColor; opacity: .12; }
+.typing-chart .chart-line { stroke: rgb(var(--color-primary-500)); stroke-width: 3; fill: none; }
+.typing-chart .chart-dot { fill: rgb(var(--color-primary-500)); stroke: rgb(var(--color-neutral-50)); stroke-width: 2; cursor: pointer; }
+.typing-chart .chart-dot:focus { outline: none; stroke: currentColor; stroke-width: 4; }
+.typing-chart__detail { min-height: 2.5rem; padding: .6rem; background: rgb(var(--color-primary-500) / .12); border-radius: .4rem; }
+.typing-chart table { width: 100%; min-width: 400px; }
+.typing-chart th, .typing-chart td { padding: .5rem; text-align: left; }
