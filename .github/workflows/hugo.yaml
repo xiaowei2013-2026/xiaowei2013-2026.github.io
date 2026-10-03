@@ -39,7 +39,7 @@ jobs:
       - name: Check reading records
         run: python3 scripts/check_reading.py
       - name: Build
-        run: hugo --environment production --gc --minify --buildDrafts=false --buildFuture=false --buildExpired=false --baseURL "${{ steps.pages.outputs.base_url }}/"
+        run: hugo --environment production --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
       - name: Upload site
         uses: actions/upload-pages-artifact@v5
         with:

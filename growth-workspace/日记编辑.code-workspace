@@ -14,17 +14,7 @@
       {
         "label": "预览网站",
         "type": "shell",
-        "command": ".\\.tools\\hugo\\hugo.exe server --environment production --minify --disableFastRender --buildDrafts=false --buildFuture=false --buildExpired=false",
-        "options": {
-          "cwd": "${workspaceFolder}/../.."
-        },
-        "isBackground": true,
-        "problemMatcher": []
-      },
-      {
-        "label": "预览网站（含草稿）",
-        "type": "shell",
-        "command": ".\\.tools\\hugo\\hugo.exe server -D",
+        "command": ".\\preview.cmd",
         "options": {
           "cwd": "${workspaceFolder}/../.."
         },

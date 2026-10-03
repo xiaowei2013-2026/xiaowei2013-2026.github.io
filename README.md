@@ -21,10 +21,7 @@
 
 在 `content/diary/年/月/` 中复制一篇现有日记并修改内容。文件名建议使用 `YYYY-MM-DD.md`。
 
-文章开头的 `draft`：
-
-- `true`：草稿，不会公开发布
-- `false`：正式公开
+本站内容默认公开，新建模板使用 `draft: false`，不区分草稿预览和正式预览。
 
 图片放在 `static/images/年/月/`，文章内写：
 
@@ -36,17 +33,17 @@
 
 ## 本地预览
 
-安装 Hugo Extended 后，在项目目录运行：
+项目已提供预览脚本，在项目目录运行：
 
 当前本地 Hugo 为 `0.166.0`，GitHub Actions 也固定为该版本。后续升级时同步修改线上构建版本。
 
 ```powershell
-.\.tools\hugo\hugo.exe server --environment production --minify --disableFastRender --buildDrafts=false --buildFuture=false --buildExpired=false
+.\preview.cmd
 ```
 
 然后打开 `http://localhost:1313/`。
 
-也可以在任意编辑工作区中执行“终端 → 运行任务 → 预览网站”。默认预览使用与线上发布相同的 `production` 环境和压缩设置，不包含草稿、未来日期或已过期内容，并关闭快速渲染以便完整更新页面。需要检查草稿时，执行“预览网站（含草稿）”，或运行 `.\.tools\hugo\hugo.exe server -D`。同一时间只运行一个预览任务，切换模式前先结束旧任务；修改任务配置后，已运行的预览服务也需要重新启动。
+也可以在任意编辑工作区中执行“终端 → 运行任务 → 预览网站”，或双击项目根目录的 `preview.cmd`。预览使用与线上发布相同的 `production` 环境和压缩设置，并关闭快速渲染以便完整更新页面。所有文章按公开内容管理，本地和线上使用同一套内容规则。同一时间只运行一个预览任务，启动前先结束旧任务；修改任务配置后，已运行的预览服务也需要重新启动。
 
 本地显示当前磁盘上的文件，线上显示最近一次成功部署的版本。本地修改会触发预览更新，但只有提交并推送到 `main`，且 GitHub Actions 部署成功后，线上才会更新。保持两边的内容、数据、Hugo/主题版本及构建日期一致，才能获得一致的展示；本地地址、实时刷新和线上域名会有所不同。
 
@@ -84,7 +81,7 @@ python scripts/sync_anki_stats.py
 
 将记录的 `book_id` 填为 `the-little-prince`，填写 `reading_minutes`，可选填 `pages`，再把标题改成 `2026-09-30 · 小王子`。同一天读了两本书，就创建两个不同文件；热力图会把分钟数相加。书籍页的笔记不会额外计分。阅读 30 分钟达到阅读栏满格；综合热力图按日记 30%、英语 50%、阅读 20% 计算。
 
-书籍和记录创建时默认是草稿。准备公开时，将对应文件的 `draft` 改为 `false`。正式记录关联的书籍也需要公开。发布前运行 `python scripts/check_reading.py`，检查书籍编号、日期和重复记录；GitHub Actions 也会执行这一步。
+书籍和记录创建时默认公开。填写完整书籍信息及阅读记录后，发布前运行 `python scripts/check_reading.py`，检查书籍编号、日期和重复记录；GitHub Actions 也会执行这一步。
 
 ## 每日金句
 

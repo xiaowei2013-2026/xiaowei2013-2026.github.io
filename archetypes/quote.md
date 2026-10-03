@@ -1,7 +1,7 @@
 ---
 title: "每日金句 · {{ .Name }}"
 date: {{ .Name }}
-draft: true
+draft: false
 quote: ""
 author: ""
 work: ""

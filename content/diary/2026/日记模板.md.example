@@ -15,7 +15,7 @@ tags: ["日常"]
 description: "填写一句简短介绍。"
 
 # true 表示草稿、不公开；准备发布时改成 false
-draft: true
+draft: false
 
 # false 表示正文顶部不额外显示封面图
 showHero: false

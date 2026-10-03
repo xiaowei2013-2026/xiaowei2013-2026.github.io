@@ -1,7 +1,7 @@
 ---
 title: "{{ .Name }}"
 date: {{ substr .Name 0 10 }}
-draft: true
+draft: false
 entry_type: reading-log
 book_id: ""
 reading_minutes: 0

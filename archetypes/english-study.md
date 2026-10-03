@@ -1,7 +1,7 @@
 ---
 title: "{{ replace .Name "-" " " | title }}"
 date: {{ .Date }}
-draft: true
+draft: false
 passages: 0
 passage_minutes: 0
 tags: ["英语学习"]
@@ -14,5 +14,3 @@ tags: ["英语学习"]
 - 生词与表达：
 
 ## 今日总结
-
-

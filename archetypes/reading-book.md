@@ -1,7 +1,7 @@
 ---
 title: "{{ .Name }}"
 date: {{ .Date }}
-draft: true
+draft: false
 entry_type: book
 book_id: "{{ .Name }}"
 author: ""
