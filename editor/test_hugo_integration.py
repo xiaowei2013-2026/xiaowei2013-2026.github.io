@@ -1,4 +1,4 @@
-"""Exercise authentication, saving and original Hugo rendering in an isolated site."""
+"""Exercise local saving and original Hugo rendering in an isolated site."""
 import hashlib
 import base64
 import http.client
@@ -12,7 +12,6 @@ import unittest
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 
-from auth import set_password
 from hugo_preview import HugoPreview
 from server import PROJECT_ROOT, make_handler, read_article
 
@@ -33,7 +32,6 @@ class HugoIntegrationTests(unittest.TestCase):
             article = root / 'content' / 'note' / 'index.md'
             article.parent.mkdir(parents=True)
             article.write_text('---\ntitle: Original fixture\n---\n## Original heading\n\nOriginal body\n', encoding='utf-8')
-            set_password(root / '.tools' / 'editor-auth.json', 'isolated-hugo-password')
             preview = HugoPreview(root, 0, executable)
             handler = make_handler(root / 'content', site_port=preview.port, site_refresh=preview.refresh)
             handler.log_message = lambda *args: None
@@ -58,16 +56,11 @@ class HugoIntegrationTests(unittest.TestCase):
                 response.read()
                 connection.request('GET', '/api/config')
                 token = json.loads(connection.getresponse().read())['token']
-                connection.request('POST', '/api/login', json.dumps({'password': 'isolated-hugo-password'}),
-                                   {'Content-Type': 'application/json', 'X-Editor-Token': token})
-                response = connection.getresponse()
-                cookie = response.getheader('Set-Cookie').split(';')[0]
-                token = json.loads(response.read())['token']
                 before = read_article(root / 'content', 'note/index.md')
                 data = {'path': 'note/index.md', 'title': 'Updated fixture',
                         'body': '## Updated heading\n\nSaved fixture paragraph\n', 'revision': before['revision']}
                 connection.request('POST', '/api/save', json.dumps(data),
-                                   {'Content-Type': 'application/json', 'X-Editor-Token': token, 'Cookie': cookie})
+                                   {'Content-Type': 'application/json', 'X-Editor-Token': token})
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)
                 saved = json.loads(response.read())['article']
@@ -83,7 +76,7 @@ class HugoIntegrationTests(unittest.TestCase):
                 self.assertIn('#updated-heading', html)
                 self.assertEqual(saved['revision'], hashlib.sha256(article.read_bytes()).hexdigest())
                 image = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jEyoAAAAASUVORK5CYII=')
-                headers = {'Content-Type': 'application/json', 'X-Editor-Token': token, 'Cookie': cookie}
+                headers = {'Content-Type': 'application/json', 'X-Editor-Token': token}
                 connection.request('POST', '/api/upload-new', json.dumps({'data': base64.b64encode(image).decode()}), headers)
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)

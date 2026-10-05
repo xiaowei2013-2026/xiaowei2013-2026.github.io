@@ -18,7 +18,6 @@ from datetime import date, datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
-from auth import AuthError, AuthStore, session_cookie
 from hugo_preview import HugoPreview
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -334,21 +333,19 @@ def list_articles(root: Path) -> list[dict]:
     return sorted(articles, key=lambda item: (item["date"], item["path"]), reverse=True)
 
 
-def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = None, auth_store: AuthStore | None = None,
+def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = None,
                  site_port: int | None = None, site_refresh=None):
-    auth = auth_store or AuthStore(content_root.parent / '.tools' / 'editor-auth.json')
+    request_token = secrets.token_hex(32)
     backup_root = backup_root or content_root.parent / ".tools" / "editor-backups"
     class Handler(BaseHTTPRequestHandler):
         def allowed_host(self):
             return self.headers.get("Host") in {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
 
-        def respond(self, status: int, content: bytes, mime: str, cookie: str | None = None, site=False):
+        def respond(self, status: int, content: bytes, mime: str, site=False):
             self.send_response(status)
             self.send_header("Content-Type", mime)
             self.send_header("Content-Length", str(len(content)))
             self.send_header("Cache-Control", "no-store")
-            if cookie:
-                self.send_header("Set-Cookie", cookie)
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("X-Frame-Options", "DENY")
             if not site:
@@ -356,8 +353,8 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
             self.end_headers()
             self.wfile.write(content)
 
-        def json_response(self, status: int, payload: dict, cookie: str | None = None):
-            self.respond(status, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8", cookie)
+        def json_response(self, status: int, payload: dict):
+            self.respond(status, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
 
         def do_GET(self):
             if not self.allowed_host():
@@ -366,10 +363,7 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
             url = urlsplit(self.path)
             try:
                 if url.path == "/api/config":
-                    session = auth.session(self.headers.get('Cookie'))
-                    self.json_response(200, {"token": session['csrf'] if session else auth.bootstrap_token,
-                                             "local_only": True, "authenticated": bool(session),
-                                             "configured": auth.configured()})
+                    self.json_response(200, {"token": request_token, "local_only": True})
                 elif url.path == "/api/articles":
                     self.json_response(200, {"articles": list_articles(content_root)})
                 elif url.path == "/api/article":
@@ -400,7 +394,7 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                 elif url.path.startswith("/api/"):
                     self.json_response(404, {"error": "接口不存在"})
                 elif site_port is not None:
-                    # Do not forward owner cookies, auth tokens, or arbitrary upstream addresses.
+                    # Keep browser cookies and editor request tokens out of the Hugo proxy.
                     connection = http.client.HTTPConnection('127.0.0.1', site_port, timeout=15)
                     try:
                         connection.request('GET', self.path, headers={'Host': f'localhost:{self.server.server_port}'})
@@ -422,8 +416,6 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                     self.json_response(404, {"error": "页面不存在"})
             except FileNotFoundError:
                 self.json_response(404, {"error": "文章不存在"})
-            except AuthError as error:
-                self.json_response(error.status, {"error": str(error)})
             except (ValueError, UnicodeError) as error:
                 self.json_response(400, {"error": str(error)})
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
@@ -434,33 +426,22 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
         def do_POST(self):
             origin = self.headers.get("Origin")
             expected = {f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"}
-            if not self.allowed_host() or (origin and origin not in expected):
+            if not self.allowed_host() or (origin and origin not in expected) or self.headers.get("Sec-Fetch-Site") == "cross-site":
                 self.json_response(403, {"error": "请求未授权，请刷新此本地页面后重试"})
                 return
             try:
-                session = auth.session(self.headers.get('Cookie'))
-                csrf = session['csrf'] if session else auth.bootstrap_token
                 supplied = self.headers.get('X-Editor-Token', '')
-                if supplied and self.path != '/api/login' and not session:
-                    raise AuthError('登录已过期，请重新登录。')
-                if not secrets.compare_digest(supplied, csrf):
-                    raise AuthError('请求未授权，请刷新页面后重试。', 403)
-                if self.path != '/api/login' and not session:
-                    raise AuthError('请先登录管理员账号。')
+                if not secrets.compare_digest(supplied, request_token):
+                    self.json_response(403, {"error": "请求未授权，请刷新此本地页面后重试"})
+                    return
                 length = int(self.headers.get("Content-Length", "0"))
-                maximum = 4096 if self.path in {'/api/login', '/api/logout'} else 12 * 1024 * 1024
+                maximum = 12 * 1024 * 1024
                 if not 0 < length <= maximum or self.headers.get("Content-Type") != "application/json":
                     raise ValueError("请求大小或格式无效")
                 data = json.loads(self.rfile.read(length))
                 if not isinstance(data, dict):
                     raise ValueError("请求格式无效")
-                if self.path == '/api/login':
-                    identifier, session = auth.login(data.get('password'))
-                    self.json_response(200, {'authenticated': True, 'token': session['csrf']}, session_cookie(identifier))
-                elif self.path == '/api/logout':
-                    auth.logout()
-                    self.json_response(200, {'authenticated': False, 'token': auth.bootstrap_token}, session_cookie(clear=True))
-                elif self.path == "/api/save":
+                if self.path == "/api/save":
                     article = save_article(content_root, data["path"], data["title"], data["body"], data["revision"], backup_root)
                     self.json_response(200, {"article": article, "local_only": True})
                 elif self.path == '/api/delete':
@@ -485,8 +466,6 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                     self.json_response(404, {"error": "接口不存在"})
             except ConflictError as error:
                 self.json_response(409, {"error": str(error)})
-            except AuthError as error:
-                self.json_response(error.status, {"error": str(error)})
             except FileNotFoundError:
                 self.json_response(404, {"error": "文章不存在"})
             except (ValueError, KeyError, TypeError, UnicodeError) as error:

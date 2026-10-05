@@ -5,13 +5,12 @@
   let source = document.querySelector('meta[name="growth-article-path"]')?.content;
   let heading = source && document.querySelector('#single_header h1');
   let body = source && document.querySelector('.article-content');
-  let token = '', authenticated = false, article = null, editor = null;
+  let token = '', ready = false, article = null, editor = null;
   let busy = false, uploading = 0, baseline = '', libraries = null, reloading = false;
   let creating = false, identifier = '', newFields = null, targetURL = location.pathname;
   const controls = document.createElement('div');
   controls.className = 'growth-editor-controls';
-  controls.innerHTML = '<button type="button" data-action="new" hidden>新建文章</button><button type="button" data-action="account">管理员登录</button>';
-  const account = controls.querySelector('[data-action="account"]');
+  controls.innerHTML = '<button type="button" data-action="new" hidden>新建文章</button>';
   const newButton = controls.querySelector('[data-action="new"]');
   document.querySelector('#main-content')?.prepend(controls);
   const toolbar = document.createElement('div');
@@ -32,20 +31,12 @@
     heading.after(titleInput);
     body.before(mount);
   }
-  const dialog = document.createElement('dialog');
-  dialog.className = 'growth-editor-login';
-  dialog.setAttribute('aria-label', '管理员登录');
-  dialog.innerHTML = '<form><h2>管理员登录</h2><label>管理员密码<input type="password" autocomplete="current-password" maxlength="256" required></label><p role="status" aria-live="polite"></p><div><button type="button">取消</button><button type="submit">登录</button></div></form>';
-  document.body.append(dialog);
-  const passwordInput = dialog.querySelector('input');
-  const loginStatus = dialog.querySelector('p');
-  const loginSubmit = dialog.querySelector('[type="submit"]');
-  async function refreshAuth() {
+  async function initializeLocalEditor() {
     const response = await fetch('/api/config', {cache: 'no-store'});
     const config = await response.json();
-    if (!response.ok) throw new Error(config.error || '无法读取登录状态');
+    if (!response.ok) throw new Error(config.error || '无法连接本地编辑服务');
     token = config.token;
-    authenticated = config.authenticated;
+    ready = config.local_only === true;
     updateControls();
     return config;
   }
@@ -59,21 +50,18 @@
     const response = await fetch(url, options);
     const result = await response.json();
     if (!response.ok) {
-      if (response.status === 401) await refreshAuth();
       throw new Error(result.error || '操作失败');
     }
     return result;
   }
   function updateControls() {
-    account.textContent = authenticated ? '退出登录' : '管理员登录';
-    account.disabled = busy || uploading > 0;
-    newButton.hidden = !authenticated || !!editor || contextDirectory === undefined;
+    newButton.hidden = !ready || !!editor || contextDirectory === undefined;
     newButton.disabled = busy || uploading > 0;
-    buttons.edit.hidden = !authenticated || !!editor || !article?.editable;
-    buttons.delete.hidden = !authenticated || !!editor || !article || article.kind !== '文章';
+    buttons.edit.hidden = !ready || !!editor || !article?.editable;
+    buttons.delete.hidden = !ready || !!editor || !article || article.kind !== '文章';
     ['cancel', 'save'].forEach(name => {buttons[name].hidden = !editor;});
     Object.values(buttons).forEach(button => {button.disabled = busy || uploading > 0;});
-    buttons.save.disabled ||= !authenticated;
+    buttons.save.disabled ||= !ready;
     if (editor) {
       mount.inert = busy;
       titleInput.disabled = busy;
@@ -125,7 +113,7 @@
     finally {uploading--; updateControls();}
   }
   async function edit() {
-    if (!authenticated || !article?.editable || editor || busy) return;
+    if (!ready || !article?.editable || editor || busy) return;
     busy = true; updateControls(); status.textContent = '正在打开编辑…';
     try {
       article = (await api('/api/article?path=' + encodeURIComponent(source))).article;
@@ -147,7 +135,7 @@
     finally {busy = false; updateControls();}
   }
   async function startNew() {
-    if (!authenticated || editor || busy || contextDirectory === undefined) return;
+    if (!ready || editor || busy || contextDirectory === undefined) return;
     busy = true; updateControls();
     try {
       await loadLibraries();
@@ -197,7 +185,7 @@
     status.textContent = message + ' 预览仍在更新，请稍后刷新。';
   }
   async function save() {
-    if (!authenticated || !editor || busy || uploading) return;
+    if (!ready || !editor || busy || uploading) return;
     if (creating && [...newFields.querySelectorAll('[required]')].some(field => !field.reportValidity())) return;
     if (!dirty()) {cancel(); status.textContent = '没有修改，文件保持原样。'; return;}
     busy = true; updateControls();
@@ -226,7 +214,7 @@
     } finally {busy = false; updateControls();}
   }
   async function removeArticle() {
-    if (!authenticated || !article || editor || busy || uploading) return;
+    if (!ready || !article || editor || busy || uploading) return;
     if (!confirm('删除本地文章“' + article.title + '”？图片会保留。已有提交可通过 Git 恢复，未提交的新文章删除后无法恢复。')) return;
     busy = true; updateControls(); status.textContent = '正在删除本地文章…';
     try {
@@ -242,31 +230,6 @@
     } catch (error) {status.textContent = error.message;}
     finally {busy = false; updateControls();}
   }
-  account.addEventListener('click', async () => {
-    if (busy || uploading) return;
-    if (authenticated) {
-      if (!cancel()) return;
-      try {await api('/api/logout', {}); await refreshAuth(); status.textContent = '已退出登录。';}
-      catch (error) {status.textContent = error.message;}
-      return;
-    }
-    try {
-      const config = await refreshAuth();
-      loginStatus.textContent = config.configured ? '' : '请先运行 setup-editor.cmd 设置管理员密码。';
-      loginSubmit.disabled = !config.configured; dialog.showModal(); passwordInput.focus();
-    } catch (error) {status.textContent = error.message;}
-  });
-  dialog.querySelector('[type="button"]').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('close', () => {passwordInput.value = '';});
-  dialog.querySelector('form').addEventListener('submit', async event => {
-    event.preventDefault(); loginSubmit.disabled = true; loginStatus.textContent = '正在登录…';
-    const password = passwordInput.value; passwordInput.value = '';
-    try {
-      const result = await api('/api/login', {password}); token = result.token; authenticated = true;
-      updateControls(); dialog.close(); status.textContent = '已登录。';
-    } catch (error) {loginStatus.textContent = error.message;}
-    finally {loginSubmit.disabled = false;}
-  });
   buttons.edit.addEventListener('click', edit);
   buttons.delete.addEventListener('click', removeArticle);
   newButton.addEventListener('click', startNew);
@@ -277,10 +240,10 @@
   });
   (async () => {
     try {
-      await refreshAuth();
+      await initializeLocalEditor();
       if (source && heading && body) article = (await api('/api/article?path=' + encodeURIComponent(source))).article;
       updateControls();
-      if (authenticated && article && !article.editable) status.textContent = '此页包含专用图表组件，可阅读，暂时不能编辑。';
+      if (ready && article && !article.editable) status.textContent = '此页包含专用图表组件，可阅读，暂时不能编辑。';
       const stored = sessionStorage.getItem('growth-editor-message');
       if (stored) {
         sessionStorage.removeItem('growth-editor-message');
