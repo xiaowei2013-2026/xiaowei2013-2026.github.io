@@ -5,3 +5,4 @@
 *.anki2
 *.anki21
 collection.media/
+__pycache__/

@@ -1,0 +1,8 @@
+{{ if site.Params.inlineEditor }}
+  <link rel="stylesheet" href="/_editor/inline.css">
+  <script src="/_editor/inline.js" defer></script>
+  {{ if and .IsPage .File }}
+    <meta name="growth-article-path" content="{{ replace .File.Path "\\" "/" }}">
+    <meta name="growth-article-revision" content="{{ crypto.SHA256 (readFile (printf "content/%s" .File.Path)) }}">
+  {{ end }}
+{{ end }}
