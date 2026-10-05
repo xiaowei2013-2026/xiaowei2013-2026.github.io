@@ -80,7 +80,7 @@ class ReadOnlyTests(unittest.TestCase):
             response = connection.getresponse()
             self.assertEqual(response.status, 403)
             response.read()
-            for endpoint in ["/", "/app.js", "/styles.css"]:
+            for endpoint in ["/_editor/inline.js", "/_editor/inline.css"]:
                 connection.request("GET", endpoint)
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)

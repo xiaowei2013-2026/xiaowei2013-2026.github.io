@@ -1,4 +1,4 @@
-"""Local article editing prototype. Not a production authentication server."""
+"""Local Markdown editing on the original Hugo site."""
 
 from __future__ import annotations
 
@@ -18,11 +18,8 @@ from datetime import date, datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
-from git_sync import GitSync, SyncError
 from auth import AuthError, AuthStore, session_cookie
 from hugo_preview import HugoPreview
-from recycle_bin import RecycleBin, TrashConflict
-from sync_overview import SyncOverview
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CONTENT_ROOT = PROJECT_ROOT / "content"
@@ -43,11 +40,29 @@ def split_document(text: str):
     return text[:match.end()], text[match.end():]
 
 
-def create_article(root: Path, module: str, title: str, day: str, body: str, identifier: str, quote_fields=None):
-    locations = {'diary': 'diary', 'english': 'english/notes', 'reading': 'reading/other',
-                 'other': 'other/notes', 'quotes': 'quotes'}
-    if not isinstance(module, str) or module not in locations:
-        raise ValueError('请选择有效文章分类')
+def content_directory(root: Path, directory: str) -> Path:
+    if not isinstance(directory, str) or '\\' in directory or ':' in directory:
+        raise ValueError('文章目录无效')
+    candidate = Path(directory)
+    if candidate.is_absolute() or any(part in {'.', '..'} or part.startswith('.') for part in candidate.parts):
+        raise ValueError('不允许访问内容目录之外的文件夹')
+    resolved = (root / candidate).resolve()
+    if not resolved.is_relative_to(root.resolve()) or not resolved.is_dir():
+        raise ValueError('当前内容目录不存在或超出项目范围')
+    current = resolved
+    while current != root.resolve():
+        if (current / 'index.md').exists():
+            raise ValueError('不能在文章资源目录内新建文章，请进入所属栏目')
+        current = current.parent
+    return resolved
+
+
+def create_article(root: Path, directory: str, title: str, day: str, body: str, identifier: str, quote_fields=None, reading_fields=None):
+    target = content_directory(root, directory)
+    directory = target.relative_to(root.resolve()).as_posix()
+    if directory == '.':
+        directory = ''
+    module = directory.split('/')[0]
     if not isinstance(title, str) or not title.strip() or len(title) > 200:
         raise ValueError('标题不能为空，且不能超过 200 字')
     if not isinstance(day, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}', day):
@@ -62,6 +77,33 @@ def create_article(root: Path, module: str, title: str, day: str, body: str, ide
     if '{{<' in body or '{{%' in body:
         raise ValueError('新建文章暂不支持 Hugo 图表组件')
     fields = {'title': title.strip(), 'date': day, 'draft': False, 'editor_id': identifier}
+    if directory == 'reading/books' or directory.startswith('reading/books/'):
+        metadata = reading_fields or {}
+        if not isinstance(metadata, dict):
+            raise ValueError('阅读信息无效')
+        author = metadata.get('author', '')
+        status = metadata.get('status', '在读')
+        if not isinstance(author, str) or len(author) > 200 or status not in {'未读', '在读', '已读'}:
+            raise ValueError('书籍信息无效')
+        fields.update(entry_type='book', book_id='book-' + identifier, author=author.strip(), status=status)
+    elif directory == 'reading/logs' or directory.startswith('reading/logs/'):
+        metadata = reading_fields or {}
+        if not isinstance(metadata, dict):
+            raise ValueError('阅读信息无效')
+        book_id = metadata.get('book_id', '')
+        books = [path for path in (root / 'reading' / 'books').rglob('*.md') if path.name != '_index.md']
+        if not isinstance(book_id, str) or not book_id or not any(
+                re.search(r'^book_id:\s*[\"\']?' + re.escape(book_id) + r'[\"\']?\s*$',
+                          path.read_text(encoding='utf-8-sig'), re.M) for path in books):
+            raise ValueError('请输入已存在书籍的 book_id')
+        try:
+            minutes = int(metadata.get('reading_minutes', ''))
+            pages = int(metadata.get('pages', '0'))
+        except (ValueError, TypeError):
+            raise ValueError('阅读分钟数和页数必须是非负整数')
+        if minutes < 0 or pages < 0:
+            raise ValueError('阅读分钟数和页数必须是非负整数')
+        fields.update(entry_type='reading-log', book_id=book_id, reading_minutes=minutes, pages=pages)
     if module == 'quotes':
         if not isinstance(quote_fields, dict):
             raise ValueError('请填写金句原文')
@@ -75,14 +117,14 @@ def create_article(root: Path, module: str, title: str, day: str, body: str, ide
             raise ValueError('请填写金句原文，不能只有标点或空格')
         attribution = ' · '.join(fields[key] for key in ('author', 'work') if fields[key])
         body = '\n'.join('> ' + line for line in fields['quote'].splitlines()) + '\n\n' + ('——' + attribution + '\n\n' if attribution else '') + body.strip()
-        relative = f'quotes/{selected:%Y/%m}/{day}.md'
-        url = f'/quotes/{selected:%Y/%m}/{day}/'
+        relative = f'{directory}/{day}.md'
+        url = f'/{directory}/{day}/'
     else:
         if not body.strip():
             raise ValueError('请先填写正文再保存')
         slug = day + '-' + identifier[:12]
-        directory = f'{locations[module]}/{selected:%Y/%m}/{slug}'
-        relative, url = directory + '/index.md', '/' + directory + '/'
+        bundle = '/'.join(part for part in (directory, slug) if part)
+        relative, url = bundle + '/index.md', '/' + bundle + '/'
     fields['url'] = url
     encoded = ('---\n' + ''.join(key + ': ' + json.dumps(value, ensure_ascii=False) + '\n'
                                  for key, value in fields.items()) + '---\n\n' + body.strip() + '\n').encode('utf-8')
@@ -96,6 +138,12 @@ def create_article(root: Path, module: str, title: str, day: str, body: str, ide
             if path.read_bytes() == encoded:
                 return read_article(root, relative), url
             raise ConflictError('该文章或当天的金句已存在，请打开原文章编辑，未覆盖文件。')
+        if fields.get('entry_type') == 'reading-log':
+            for existing in (root / 'reading' / 'logs').rglob('*.md'):
+                text = existing.read_text(encoding='utf-8-sig')
+                if (re.search(r'^book_id:\s*[\"\']?' + re.escape(book_id) + r'[\"\']?\s*$', text, re.M) and
+                        re.search(r'^date:\s*[\"\']?' + re.escape(day) + r'[\"\']?\s*$', text, re.M)):
+                    raise ConflictError('这本书当天的阅读记录已经存在')
         if module == 'quotes':
             for existing in (root / 'quotes').rglob('*.md'):
                 if existing.name == '_index.md':
@@ -124,6 +172,16 @@ def create_article(root: Path, module: str, title: str, day: str, body: str, ide
             if temporary and temporary.exists():
                 temporary.unlink()
         return read_article(root, relative), url
+
+
+def delete_article(root: Path, relative: str, revision: str):
+    with WRITE_LOCK:
+        path = article_path(root, relative)
+        if path.name == '_index.md':
+            raise ValueError('栏目目录页不能删除')
+        if hashlib.sha256(path.read_bytes()).hexdigest() != revision:
+            raise ConflictError('文章已在其他地方修改，请重新打开后再删除')
+        path.unlink()
 
 
 def save_article(root: Path, relative: str, title: str, body: str, revision: str, backups: Path):
@@ -279,7 +337,6 @@ def list_articles(root: Path) -> list[dict]:
 def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = None, auth_store: AuthStore | None = None,
                  site_port: int | None = None, site_refresh=None):
     auth = auth_store or AuthStore(content_root.parent / '.tools' / 'editor-auth.json')
-    trash = RecycleBin(content_root, WRITE_LOCK)
     backup_root = backup_root or content_root.parent / ".tools" / "editor-backups"
     class Handler(BaseHTTPRequestHandler):
         def allowed_host(self):
@@ -315,15 +372,6 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                                              "configured": auth.configured()})
                 elif url.path == "/api/articles":
                     self.json_response(200, {"articles": list_articles(content_root)})
-                elif url.path == '/api/trash':
-                    if not auth.session(self.headers.get('Cookie')):
-                        raise AuthError('请先登录管理员账号。')
-                    self.json_response(200, {'items': trash.items()})
-                elif url.path == '/api/sync-plan':
-                    if not auth.session(self.headers.get('Cookie')):
-                        raise AuthError('请先登录管理员账号。')
-                    scope = parse_qs(url.query).get('scope', ['content'])[0]
-                    self.json_response(200, SyncOverview(content_root.parent).plan(scope))
                 elif url.path == "/api/article":
                     relative = parse_qs(url.query).get("path", [""])[0]
                     self.json_response(200, {"article": read_article(content_root, relative)})
@@ -331,10 +379,6 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                     name = url.path.rsplit('/', 1)[-1]
                     mime = 'text/javascript' if name.endswith('.js') else 'text/css'
                     self.respond(200, (STATIC_ROOT / name).read_bytes(), mime + '; charset=utf-8')
-                elif url.path in {"/_prototype/", "/app.js", "/styles.css"} or (url.path == '/' and site_port is None):
-                    name = {"/": "index.html", "/_prototype/": "index.html", "/app.js": "app.js", "/styles.css": "styles.css"}[url.path]
-                    mime = {"index.html": "text/html", "app.js": "text/javascript", "styles.css": "text/css"}[name]
-                    self.respond(200, (STATIC_ROOT / name).read_bytes(), mime + "; charset=utf-8")
                 elif url.path.startswith("/vendor/"):
                     name = unquote(url.path[len("/vendor/"):])
                     allowed_files = {"toastui-editor-all.min.js", "toastui-editor.min.css", "zh-cn.js", "LICENSE"}
@@ -353,6 +397,8 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                     if not path.is_relative_to(media_root) or path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
                         raise ValueError("图片路径无效")
                     self.respond(200, path.read_bytes(), mimetypes.guess_type(path.name)[0] or "application/octet-stream")
+                elif url.path.startswith("/api/"):
+                    self.json_response(404, {"error": "接口不存在"})
                 elif site_port is not None:
                     # Do not forward owner cookies, auth tokens, or arbitrary upstream addresses.
                     connection = http.client.HTTPConnection('127.0.0.1', site_port, timeout=15)
@@ -378,8 +424,6 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                 self.json_response(404, {"error": "文章不存在"})
             except AuthError as error:
                 self.json_response(error.status, {"error": str(error)})
-            except SyncError as error:
-                self.json_response(502, {'error': str(error)})
             except (ValueError, UnicodeError) as error:
                 self.json_response(400, {"error": str(error)})
             except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
@@ -418,52 +462,18 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                     self.json_response(200, {'authenticated': False, 'token': auth.bootstrap_token}, session_cookie(clear=True))
                 elif self.path == "/api/save":
                     article = save_article(content_root, data["path"], data["title"], data["body"], data["revision"], backup_root)
-                    self.json_response(200, {"article": article, "github_synced": False})
+                    self.json_response(200, {"article": article, "local_only": True})
                 elif self.path == '/api/delete':
-                    with WRITE_LOCK:
-                        article = read_article(content_root, data['path'])
-                        record = trash.delete(data['path'], data['revision'], article['title'], data.get('url', ''))
+                    delete_article(content_root, data['path'], data['revision'])
                     if site_refresh:
                         site_refresh()
-                    self.json_response(200, {'item': record, 'github_synced': False})
-                elif self.path == '/api/restore':
-                    with WRITE_LOCK:
-                        pending_file = content_root.parent / '.tools' / 'editor-sync.json'
-                        if pending_file.exists():
-                            pending = json.loads(pending_file.read_text(encoding='utf-8'))
-                            record, _ = trash.record(data['id'])
-                            relative = 'content/' + record['path']
-                            pending_delete = pending.get('operation') == 'delete' and pending['article'] == relative
-                            pending_batch = pending.get('operation') == 'batch' and any(item['path'] == relative and item['action'] == 'D' for item in pending.get('snapshot', []))
-                            if pending_delete or pending_batch:
-                                raise TrashConflict('这篇文章的删除提交尚未推送完成，请先重试发布删除，再恢复。')
-                        record = trash.restore(data['id'])
-                    if site_refresh:
-                        site_refresh()
-                    self.json_response(200, {'item': record})
-                elif self.path == '/api/sync-delete':
-                    with WRITE_LOCK:
-                        record, directory = trash.record(data['id'])
-                        if not (directory / 'article.md').is_file():
-                            raise ValueError('文章已恢复，不能发布删除')
-                        result = GitSync(content_root.parent).sync_deletion(trash.target(record['path']), record['revision'])
-                        trash.mark_published(data['id'])
-                    self.json_response(200, result)
-                elif self.path == '/api/sync-batch':
-                    with WRITE_LOCK:
-                        result = SyncOverview(content_root.parent).sync_batch(data['scope'], data['revision'])
-                        for item in trash.items():
-                            if not trash.target(item['path']).exists():
-                                relative = 'content/' + item['path']
-                                if not GitSync(content_root.parent).git('ls-tree', '--name-only', 'HEAD', '--', relative):
-                                    trash.mark_published(item['id'])
-                    self.json_response(200, result)
+                    self.json_response(200, {'deleted': True})
                 elif self.path == '/api/create':
-                    article, url = create_article(content_root, data['module'], data['title'], data['date'],
-                                                  data['body'], data['identifier'], data.get('quote_fields'))
+                    article, url = create_article(content_root, data['directory'], data['title'], data['date'],
+                                                  data['body'], data['identifier'], data.get('quote_fields'), data.get('reading_fields'))
                     if site_refresh:
                         site_refresh()
-                    self.json_response(200, {'article': article, 'url': url, 'github_synced': False})
+                    self.json_response(200, {'article': article, 'url': url, 'local_only': True})
                 elif self.path == '/api/upload-new':
                     url = upload_image(content_root, None, data['data'])
                     if site_refresh:
@@ -471,19 +481,12 @@ def make_handler(content_root: Path = CONTENT_ROOT, backup_root: Path | None = N
                     self.json_response(200, {'url': url})
                 elif self.path == "/api/upload":
                     self.json_response(200, {"url": upload_image(content_root, data["path"], data["data"])})
-                elif self.path == "/api/sync":
-                    with WRITE_LOCK:
-                        path = article_path(content_root, data["path"])
-                        result = GitSync(content_root.parent).sync(path, data["revision"])
-                    self.json_response(200, result)
                 else:
                     self.json_response(404, {"error": "接口不存在"})
-            except (ConflictError, TrashConflict) as error:
+            except ConflictError as error:
                 self.json_response(409, {"error": str(error)})
             except AuthError as error:
                 self.json_response(error.status, {"error": str(error)})
-            except SyncError as error:
-                self.json_response(502, {"error": str(error), "github_synced": False})
             except FileNotFoundError:
                 self.json_response(404, {"error": "文章不存在"})
             except (ValueError, KeyError, TypeError, UnicodeError) as error:
@@ -519,7 +522,7 @@ def main():
         preview.close()
         parser.exit(1, str(error) + '\n')
     print(f"原网站与直接编辑：http://localhost:{server.server_port}/", flush=True)
-    print("仅监听本机。保存修改本地 Markdown；点击同步才会提交并推送 GitHub。", flush=True)
+    print("仅监听本机。网页只修改本地 Markdown；写作完成后在终端统一 commit、push。", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

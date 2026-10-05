@@ -105,8 +105,8 @@ class AuthTests(unittest.TestCase):
             token = config['token']
             for route in ['/api/save', '/api/upload', '/api/sync', '/api/create', '/api/upload-new', '/api/delete', '/api/restore', '/api/sync-delete', '/api/sync-batch']:
                 self.assertEqual(request('POST', route, {}, token)[0], 401)
-            self.assertEqual(request('GET', '/api/trash')[0], 401)
-            self.assertEqual(request('GET', '/api/sync-plan')[0], 401)
+            self.assertEqual(request('GET', '/api/trash')[0], 404)
+            self.assertEqual(request('GET', '/api/sync-plan')[0], 404)
             self.assertEqual(article.read_bytes(), original)
             self.assertEqual(request('POST', '/api/login', {'password': PASSWORD}, token,
                                      origin='https://attacker.invalid')[0], 403)
@@ -117,6 +117,8 @@ class AuthTests(unittest.TestCase):
             cookie = cookie.split(';')[0]
             self.assertNotEqual(login['token'], token)
             self.assertTrue(request('GET', '/api/config', cookie=cookie)[1]['authenticated'])
+            for route in ['/api/sync', '/api/sync-batch', '/api/restore', '/api/sync-delete']:
+                self.assertEqual(request('POST', route, {}, login['token'], cookie)[0], 404)
             self.assertEqual(request('POST', '/api/save', {}, token, cookie)[0], 403)
             payload = {'path': 'note.md', 'title': 'Updated', 'body': 'New body',
                        'revision': read_article(content, 'note.md')['revision']}

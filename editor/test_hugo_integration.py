@@ -88,7 +88,8 @@ class HugoIntegrationTests(unittest.TestCase):
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)
                 image_url = json.loads(response.read())['url']
-                create = {'module': 'english', 'title': 'Created article', 'date': '2000-01-02',
+                (root / 'content' / 'reading' / 'books' / 'technology').mkdir(parents=True)
+                create = {'directory': 'reading/books/technology', 'title': 'Created article', 'date': '2000-01-02',
                           'body': '## New heading\n\n![picture](' + image_url + ')', 'identifier': 'e' * 32}
                 connection.request('POST', '/api/create', json.dumps(create), headers)
                 response = connection.getresponse()
@@ -112,7 +113,9 @@ class HugoIntegrationTests(unittest.TestCase):
                     'revision': created['article']['revision'], 'url': created['url']}), headers)
                 response = connection.getresponse()
                 self.assertEqual(response.status, 200)
-                deleted = json.loads(response.read())['item']
+                self.assertTrue(json.loads(response.read())['deleted'])
+                self.assertFalse((root / 'content' / created['article']['path']).exists())
+                self.assertFalse((root / '.tools' / 'editor-trash').exists())
                 for _ in range(40):
                     connection.request('GET', created['url'])
                     response = connection.getresponse()
@@ -122,20 +125,6 @@ class HugoIntegrationTests(unittest.TestCase):
                         break
                     time.sleep(0.1)
                 self.assertTrue(removed, 'Hugo still serves the deleted article')
-                connection.request('GET', '/api/trash', headers={'Cookie': cookie})
-                self.assertEqual(json.loads(connection.getresponse().read())['items'][0]['id'], deleted['id'])
-                connection.request('POST', '/api/restore', json.dumps({'id': deleted['id']}), headers)
-                response = connection.getresponse()
-                self.assertEqual(response.status, 200)
-                response.read()
-                for _ in range(40):
-                    connection.request('GET', created['url'])
-                    response = connection.getresponse()
-                    html = response.read().decode('utf-8')
-                    if response.status == 200 and created['article']['revision'] in html:
-                        break
-                    time.sleep(0.1)
-                self.assertIn(created['article']['revision'], html)
             finally:
                 connection.close()
                 if thread.is_alive():

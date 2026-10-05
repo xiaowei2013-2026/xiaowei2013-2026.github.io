@@ -5,7 +5,6 @@
 .growth-editor-toolbar span {flex-basis:100%;font-size:13px;}
 .growth-editor-toolbar span:empty {display:none;}
 .growth-editor-toolbar button:disabled,.growth-editor-controls button:disabled {opacity:.5;cursor:default;}
-.growth-editor-toolbar [data-action="save-publish"] {background:#216c52;color:#fff;}
 .growth-editor-title {font:inherit;font-size:2rem;font-weight:800;color:inherit;background:transparent;border:1px solid #94a3b866;border-radius:6px;width:100%;padding:8px;}
 .growth-editor-mount {width:100%;max-width:65ch;min-width:0;margin-bottom:40px;}
 .growth-editor-mount .toastui-editor-defaultUI {width:100%;border-radius:8px;}
@@ -30,12 +29,6 @@
 .growth-editor-quote-fields textarea {width:100%;}
 .growth-editor-quote-fields label {margin-bottom:12px;}
 .growth-editor-quote-fields[hidden],.growth-editor-new-fields[hidden] {display:none!important;}
-.growth-editor-trash {max-width:720px;max-height:85vh;overflow:auto;}
-.growth-trash-row {border-top:1px solid #94a3b866;padding:16px 0;overflow-wrap:anywhere;}
-.growth-trash-row strong,.growth-trash-row small {display:block;margin-bottom:8px;}
-.growth-trash-row>div {display:flex;gap:8px;flex-wrap:wrap;}
 .growth-editor-toolbar [data-action="delete"] {color:#b42318;}
-.growth-trash-status:empty {display:none;}
-.growth-sync-items {max-height:35vh;overflow:auto;border-top:1px solid #94a3b866;}
-.growth-sync-file {overflow-wrap:anywhere;font-size:13px;}
-.growth-sync-actions {display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+
+.growth-editor-destination {overflow-wrap:anywhere;font-size:14px;}

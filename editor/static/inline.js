@@ -1,5 +1,7 @@
 (() => {
   'use strict';
+  const contextDirectory = document.querySelector('meta[name="growth-content-directory"]')?.content;
+  const parentURL = document.querySelector('meta[name="growth-parent-url"]')?.content || '/';
   let source = document.querySelector('meta[name="growth-article-path"]')?.content;
   let heading = source && document.querySelector('#single_header h1');
   let body = source && document.querySelector('.article-content');
@@ -8,15 +10,13 @@
   let creating = false, identifier = '', newFields = null, targetURL = location.pathname;
   const controls = document.createElement('div');
   controls.className = 'growth-editor-controls';
-  controls.innerHTML = '<button type="button" data-action="new" hidden>新建文章</button><button type="button" data-action="sync-all" hidden>同步到 GitHub</button><button type="button" data-action="trash" hidden>回收站</button><button type="button" data-action="account">管理员登录</button>';
+  controls.innerHTML = '<button type="button" data-action="new" hidden>新建文章</button><button type="button" data-action="account">管理员登录</button>';
   const account = controls.querySelector('[data-action="account"]');
   const newButton = controls.querySelector('[data-action="new"]');
-  const trashButton = controls.querySelector('[data-action="trash"]');
-  const syncButton = controls.querySelector('[data-action="sync-all"]');
   document.querySelector('#main-content')?.prepend(controls);
   const toolbar = document.createElement('div');
   toolbar.className = 'growth-editor-toolbar';
-  toolbar.innerHTML = '<button type="button" data-action="edit" hidden>编辑这篇文章</button><button type="button" data-action="publish" hidden>发布到 GitHub</button><button type="button" data-action="delete" hidden>删除文章</button><button type="button" data-action="cancel" hidden>取消</button><button type="button" data-action="save" hidden>保存到本地</button><button type="button" data-action="save-publish" hidden>保存并发布</button><span role="status" aria-live="polite"></span>';
+  toolbar.innerHTML = '<button type="button" data-action="edit" hidden>编辑这篇文章</button><button type="button" data-action="delete" hidden>删除文章</button><button type="button" data-action="cancel" hidden>取消</button><button type="button" data-action="save" hidden>保存到本地</button><span role="status" aria-live="polite"></span>';
   const buttons = Object.fromEntries([...toolbar.querySelectorAll('button')].map(button => [button.dataset.action, button]));
   const status = toolbar.querySelector('span');
   const titleInput = document.createElement('input');
@@ -40,25 +40,6 @@
   const passwordInput = dialog.querySelector('input');
   const loginStatus = dialog.querySelector('p');
   const loginSubmit = dialog.querySelector('[type="submit"]');
-  const trashDialog = document.createElement('dialog');
-  trashDialog.className = 'growth-editor-login growth-editor-trash';
-  trashDialog.setAttribute('aria-label', '文章回收站');
-  trashDialog.innerHTML = '<h2>文章回收站</h2><p>本地删除可恢复。发布删除后，GitHub 构建成功才会从线上移除。</p><p class="growth-trash-status" role="status" aria-live="polite"></p><div class="growth-trash-items"></div><button type="button">关闭</button>';
-  document.body.append(trashDialog);
-  const trashStatus = trashDialog.querySelector('.growth-trash-status');
-  trashDialog.querySelector('button').addEventListener('click', () => {if (!busy) trashDialog.close();});
-  trashDialog.addEventListener('cancel', event => {if (busy) event.preventDefault();});
-  const syncDialog = document.createElement('dialog');
-  syncDialog.className = 'growth-editor-login growth-editor-trash';
-  syncDialog.setAttribute('aria-label', '文章与图片同步');
-  syncDialog.innerHTML = '<h2>文章与图片同步</h2><p>同步下方清单中的新增、修改和删除。同步时会核对 GitHub 最新版本。</p><p class="growth-sync-summary"></p><p class="growth-sync-status" role="status" aria-live="polite"></p><div class="growth-sync-items"></div><div class="growth-sync-actions"><button type="button" data-sync="refresh">刷新清单</button><button type="button" data-sync="publish" disabled>同步清单中的全部改动</button><button type="button" data-sync="close">关闭</button></div>';
-  document.body.append(syncDialog);
-  const syncStatus = syncDialog.querySelector('.growth-sync-status');
-  const syncPublish = syncDialog.querySelector('[data-sync="publish"]');
-  let syncPlan = null;
-  syncDialog.querySelector('[data-sync="close"]').addEventListener('click', () => {if (!busy) syncDialog.close();});
-  syncDialog.addEventListener('cancel', event => {if (busy) event.preventDefault();});
-
   async function refreshAuth() {
     const response = await fetch('/api/config', {cache: 'no-store'});
     const config = await response.json();
@@ -86,19 +67,13 @@
   function updateControls() {
     account.textContent = authenticated ? '退出登录' : '管理员登录';
     account.disabled = busy || uploading > 0;
-    newButton.hidden = !authenticated || !!editor;
+    newButton.hidden = !authenticated || !!editor || contextDirectory === undefined;
     newButton.disabled = busy || uploading > 0;
-    trashButton.hidden = !authenticated || !!editor;
-    trashButton.disabled = busy || uploading > 0;
-    syncButton.hidden = !authenticated || !!editor;
-    syncButton.disabled = busy || uploading > 0;
     buttons.edit.hidden = !authenticated || !!editor || !article?.editable;
-    buttons.publish.hidden = !authenticated || !!editor || !article;
     buttons.delete.hidden = !authenticated || !!editor || !article || article.kind !== '文章';
-    ['cancel', 'save', 'save-publish'].forEach(name => {buttons[name].hidden = !editor;});
+    ['cancel', 'save'].forEach(name => {buttons[name].hidden = !editor;});
     Object.values(buttons).forEach(button => {button.disabled = busy || uploading > 0;});
     buttons.save.disabled ||= !authenticated;
-    buttons['save-publish'].disabled ||= !authenticated;
     if (editor) {
       mount.inert = busy;
       titleInput.disabled = busy;
@@ -172,7 +147,7 @@
     finally {busy = false; updateControls();}
   }
   async function startNew() {
-    if (!authenticated || editor || busy) return;
+    if (!authenticated || editor || busy || contextDirectory === undefined) return;
     busy = true; updateControls();
     try {
       await loadLibraries();
@@ -181,21 +156,20 @@
       [...main.children].filter(child => child !== controls).forEach(child => original.append(child));
       original.hidden = true; main.append(original);
       const panel = document.createElement('section'); panel.className = 'growth-editor-compose';
-      panel.innerHTML = '<h1>新建文章</h1><p>写好后保存为 Markdown，点击“保存并发布”同步到 GitHub。</p>';
+      panel.innerHTML = '<h1>新建文章</h1><p>写好后保存到本地 Markdown。</p>';
       newFields = document.createElement('div'); newFields.className = 'growth-editor-new-fields';
-      newFields.innerHTML = '<label>分类<select name="module"><option value="diary">日记</option><option value="english">英语笔记</option><option value="reading">阅读文章</option><option value="other">其他文章</option><option value="quotes">每日金句</option></select></label><label>日期<input type="date" name="date" required></label><div class="growth-editor-quote-fields" hidden><label>金句原文<textarea name="quote" rows="3" maxlength="2000"></textarea></label><label>作者<input name="author" maxlength="2000"></label><label>出处<input name="work" maxlength="2000"></label><label>类型<select name="kind"><option>名言</option><option>诗词</option><option>电影台词</option></select></label><p>金句原文和出处会自动加入正文，下面可以写感想。</p></div>';
+      const isQuote = contextDirectory.split('/')[0] === 'quotes';
+      const isBook = /^reading\/books(?:\/|$)/.test(contextDirectory);
+      const isLog = /^reading\/logs(?:\/|$)/.test(contextDirectory);
+      const destination = document.createElement('p'); destination.className = 'growth-editor-destination';
+      destination.textContent = '保存位置：content/' + (contextDirectory ? contextDirectory + '/' : ''); panel.append(destination);
+      newFields.innerHTML = '<label>日期<input type="date" name="date" required></label>';
+      if (isQuote) newFields.insertAdjacentHTML('beforeend', '<div class="growth-editor-quote-fields"><label>金句原文<textarea name="quote" rows="3" maxlength="2000" required></textarea></label><label>作者<input name="author" maxlength="2000"></label><label>出处<input name="work" maxlength="2000"></label><label>类型<select name="kind"><option>名言</option><option>诗词</option><option>电影台词</option></select></label><p>原文和出处会自动加入正文，下面可以写感想。</p></div>');
+      if (isBook) newFields.insertAdjacentHTML('beforeend', '<label>作者<input name="author" maxlength="200"></label><label>阅读状态<select name="status"><option>在读</option><option>未读</option><option>已读</option></select></label>');
+      if (isLog) newFields.insertAdjacentHTML('beforeend', '<label>书籍 book_id<input name="book_id" required></label><label>阅读分钟<input name="reading_minutes" type="number" min="0" step="1" required></label><label>页数<input name="pages" type="number" min="0" step="1" value="0" required></label>');
       const parts = Object.fromEntries(new Intl.DateTimeFormat('en', {timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(part => [part.type,part.value]));
       const today = parts.year + '-' + parts.month + '-' + parts.day;
       const day = newFields.querySelector('[name="date"]'); day.value = today; day.max = today;
-      if (source?.startsWith('english/')) newFields.querySelector('[name="module"]').value = 'english';
-      else if (source?.startsWith('reading/')) newFields.querySelector('[name="module"]').value = 'reading';
-      else if (source?.startsWith('other/')) newFields.querySelector('[name="module"]').value = 'other';
-      const toggleQuote = () => {
-        const quoted = newFields.querySelector('[name="module"]').value === 'quotes';
-        newFields.querySelector('.growth-editor-quote-fields').hidden = !quoted;
-        newFields.querySelector('[name="quote"]').required = quoted;
-      };
-      newFields.querySelector('[name="module"]').addEventListener('change', toggleQuote); toggleQuote();
       titleInput.value = ''; titleInput.placeholder = '输入文章标题'; titleInput.hidden = false;
       mount.hidden = false; panel.append(newFields, titleInput, toolbar, mount); main.append(panel);
       heading = panel.querySelector('h1'); body = document.createElement('div');
@@ -222,19 +196,19 @@
     }
     status.textContent = message + ' 预览仍在更新，请稍后刷新。';
   }
-  async function save(publish = false) {
+  async function save() {
     if (!authenticated || !editor || busy || uploading) return;
     if (creating && [...newFields.querySelectorAll('[required]')].some(field => !field.reportValidity())) return;
-    if (!dirty() && !publish) {cancel(); status.textContent = '没有修改，文件保持原样。'; return;}
+    if (!dirty()) {cancel(); status.textContent = '没有修改，文件保持原样。'; return;}
     busy = true; updateControls();
     let saved = false, message = '';
     try {
       if (dirty()) {
         status.textContent = '正在保存 Markdown…';
         if (creating) {
-          const value = name => newFields.querySelector('[name="' + name + '"]').value;
-          const result = await api('/api/create', {module:value('module'),date:value('date'),title:titleInput.value,
-            body:editor.getMarkdown(),identifier,quote_fields:{quote:value('quote'),author:value('author'),work:value('work'),kind:value('kind')}});
+          const value = name => newFields.querySelector('[name="' + name + '"]')?.value || '';
+          const result = await api('/api/create', {directory:contextDirectory,date:value('date'),title:titleInput.value,
+            body:editor.getMarkdown(),identifier,quote_fields:{quote:value('quote'),author:value('author'),work:value('work'),kind:value('kind')},reading_fields:{author:value('author'),status:value('status'),book_id:value('book_id'),reading_minutes:value('reading_minutes'),pages:value('pages')}});
           article = result.article; targetURL = result.url; source = article.path; creating = false;
           newFields.hidden = true;
         } else {
@@ -243,12 +217,7 @@
         }
         baseline = editor.getMarkdown(); titleInput.value = article.title; saved = true;
       }
-      message = '已保存到本地，尚未发布到 GitHub。';
-      if (publish) {
-        status.textContent = '正在发布到 GitHub…';
-        const result = await api('/api/sync', {path: article.path, revision: article.revision});
-        message = result.changed ? '已同步到 GitHub，等待网站构建部署完成。' : '内容已与 GitHub 一致。';
-      }
+      message = '已保存到本地。';
       await reloadRendered(message);
     } catch (error) {
       message = (saved ? '文章已保存，但后续操作未完成：' : '') + error.message;
@@ -256,111 +225,23 @@
       if (saved) {try {await reloadRendered(message);} catch (_) {}}
     } finally {busy = false; updateControls();}
   }
-  async function publish() {
-    if (!authenticated || !article || editor || busy) return;
-    busy = true; updateControls(); status.textContent = '正在发布到 GitHub…';
-    try {
-      const result = await api('/api/sync', {path: article.path, revision: article.revision});
-      status.textContent = result.changed ? '已同步到 GitHub，等待网站构建部署完成。' : '内容已与 GitHub 一致。';
-    } catch (error) {status.textContent = error.message;}
-    finally {busy = false; updateControls();}
-  }
   async function removeArticle() {
     if (!authenticated || !article || editor || busy || uploading) return;
-    if (!confirm('将“' + article.title + '”移入本地回收站？图片会保留，GitHub 暂不改变。')) return;
-    busy = true; updateControls(); status.textContent = '正在移入回收站…';
+    if (!confirm('删除本地文章“' + article.title + '”？图片会保留。已有提交可通过 Git 恢复，未提交的新文章删除后无法恢复。')) return;
+    busy = true; updateControls(); status.textContent = '正在删除本地文章…';
     try {
       await api('/api/delete', {path: article.path, revision: article.revision, url: location.pathname});
-      reloading = true; location.assign('/#recycle');
+      status.textContent = '本地文件已删除，正在更新栏目…';
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const response = await fetch(location.pathname, {cache:'no-store'});
+        await response.text();
+        if (response.status === 404) break;
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      reloading = true; location.assign(parentURL);
     } catch (error) {status.textContent = error.message;}
     finally {busy = false; updateControls();}
   }
-  async function renderTrash() {
-    const result = await api('/api/trash');
-    const list = trashDialog.querySelector('.growth-trash-items'); list.replaceChildren();
-    if (!result.items.length) {const text = document.createElement('p'); text.textContent = '回收站为空。'; list.append(text);}
-    result.items.forEach(item => {
-      const row = document.createElement('div'); row.className = 'growth-trash-row';
-      const title = document.createElement('strong'); title.textContent = item.title;
-      const info = document.createElement('small'); info.textContent = new Date(item.deleted_at).toLocaleString() + ' · ' + (item.github_deleted ? '已发布删除' : '尚未发布删除');
-      const actions = document.createElement('div');
-      for (const [label, route] of [['恢复到本地', '/api/restore'], ['发布删除到 GitHub', '/api/sync-delete']]) {
-        if (route === '/api/sync-delete' && item.github_deleted) continue;
-        const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
-        button.addEventListener('click', async () => {
-          if (busy) return;
-          if (route === '/api/sync-delete' && !confirm('确认向 GitHub 发布“' + item.title + '”的删除？')) return;
-          busy = true; updateControls(); trashDialog.querySelectorAll('button').forEach(element => {element.disabled = true;});
-          trashStatus.textContent = route === '/api/restore' ? '正在恢复…' : '正在发布删除…';
-          try {
-            const result = await api(route, {id: item.id});
-            trashStatus.textContent = route === '/api/restore' ? '已恢复到本地。若之前发布过删除，请打开文章重新发布。' : (result.changed ? '删除已同步到 GitHub，等待网站构建完成。' : 'GitHub 中已无这篇文章，无需新提交。');
-            await renderTrash();
-            if (route === '/api/restore' && result.item.url?.startsWith('/') && !result.item.url.startsWith('//')) {
-              for (let attempt = 0; attempt < 20; attempt++) {
-                const response = await fetch(result.item.url, {cache:'no-store'});
-                const rendered = new DOMParser().parseFromString(await response.text(), 'text/html');
-                if (rendered.querySelector('meta[name="growth-article-revision"]')?.content === result.item.revision) {
-                  reloading = true; location.assign(result.item.url); break;
-                }
-                await new Promise(resolve => setTimeout(resolve, 250));
-              }
-            }
-          } catch (error) {trashStatus.textContent = error.message;}
-          finally {busy = false; updateControls(); trashDialog.querySelectorAll('button').forEach(element => {element.disabled = false;});}
-        });
-        actions.append(button);
-      }
-      row.append(title, info, actions); list.append(row);
-    });
-  }
-  async function openTrash() {
-    if (!authenticated || editor || busy) return;
-    trashStatus.textContent = '';
-    trashDialog.showModal();
-    try {await renderTrash();} catch (error) {trashStatus.textContent = error.message;}
-  }
-  async function renderSync() {
-    syncPlan = null; syncPublish.disabled = true;
-    const plan = await api('/api/sync-plan'); syncPlan = plan;
-    const list = syncDialog.querySelector('.growth-sync-items'); list.replaceChildren();
-    const labels = {A:'新增', M:'修改', D:'删除', T:'类型变化'};
-    plan.changes.forEach(item => {
-      const row = document.createElement('p'); row.className = 'growth-sync-file';
-      row.textContent = (labels[item.action] || '修改') + ' · ' + item.path; list.append(row);
-    });
-    const summary = syncDialog.querySelector('.growth-sync-summary');
-    summary.textContent = plan.changes.length + ' 个待同步文件。' + (plan.other_changes ? ' 另有 ' + plan.other_changes + ' 个范围外文件改动，本次不包含。' : '');
-    syncPublish.textContent = plan.retry ? '重试上次同步' : '同步清单中的全部改动';
-    syncPublish.disabled = !!plan.blocked || (!plan.changes.length && !plan.retry);
-    if (plan.blocked) syncStatus.textContent = plan.blocked;
-    else if (!plan.changes.length && !plan.retry) syncStatus.textContent = '文章与图片已与最近获取的 GitHub 版本一致。';
-  }
-  async function openSync() {
-    if (!authenticated || editor || busy) return;
-    syncStatus.textContent = '正在读取同步清单…'; syncDialog.showModal();
-    try {await renderSync(); if (syncPlan.changes.length && !syncPlan.blocked) syncStatus.textContent = '请检查清单，然后点击同步。';}
-    catch (error) {syncStatus.textContent = error.message;}
-  }
-  syncDialog.querySelector('[data-sync="refresh"]').addEventListener('click', async () => {
-    if (busy) return; syncStatus.textContent = '正在刷新清单…';
-    try {await renderSync(); if (syncPlan.changes.length && !syncPlan.blocked) syncStatus.textContent = '清单已刷新。';}
-    catch (error) {syncStatus.textContent = error.message;}
-  });
-  syncPublish.addEventListener('click', async () => {
-    if (busy || !syncPlan || syncPublish.disabled) return;
-    busy = true; updateControls(); syncDialog.querySelectorAll('button').forEach(button => {button.disabled = true;});
-    syncStatus.textContent = '正在提交并同步到 GitHub…';
-    try {
-      const result = await api('/api/sync-batch', {scope:'content',revision:syncPlan.revision});
-      await renderSync(); syncStatus.textContent = result.changed ? '清单已同步到 GitHub，等待网站构建部署完成。' : '内容已与 GitHub 一致，无需新提交。';
-    } catch (error) {syncStatus.textContent = error.message;syncPublish.disabled = false;}
-    finally {
-      busy = false; updateControls();
-      syncDialog.querySelector('[data-sync="refresh"]').disabled = false;
-      syncDialog.querySelector('[data-sync="close"]').disabled = false;
-    }
-  });
   account.addEventListener('click', async () => {
     if (busy || uploading) return;
     if (authenticated) {
@@ -388,13 +269,9 @@
   });
   buttons.edit.addEventListener('click', edit);
   buttons.delete.addEventListener('click', removeArticle);
-  trashButton.addEventListener('click', openTrash);
-  syncButton.addEventListener('click', openSync);
   newButton.addEventListener('click', startNew);
   buttons.cancel.addEventListener('click', () => {if (cancel()) status.textContent = '';});
   buttons.save.addEventListener('click', () => save());
-  buttons['save-publish'].addEventListener('click', () => save(true));
-  buttons.publish.addEventListener('click', publish);
   window.addEventListener('beforeunload', event => {
     if (!reloading && (dirty() || busy || uploading)) {event.preventDefault(); event.returnValue = '';}
   });
@@ -410,7 +287,6 @@
         const message = JSON.parse(stored);
         if (message.path === location.pathname) status.textContent = message.message;
       }
-      if (location.hash === '#recycle' && authenticated) await openTrash();
     } catch (error) {status.textContent = error.message;}
   })();
 })();
