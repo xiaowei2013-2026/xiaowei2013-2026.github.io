@@ -79,9 +79,10 @@
 
 {{- if not $isRemote -}}
   {{- $resource = or ($.Page.Resources.GetMatch $urlStr) (resources.Get $urlStr) -}}
-  {{- if and (eq .Page.CurrentSection.RelPermalink "/english/notes/") (findRE `^图片和附件/[0-9]{8}-[0-9]{3,}\.(png|jpg|jpeg|webp|gif)$` $urlStr) -}}
-    {{- $imagePath := printf "content/english/notes/%s" $urlStr -}}
-    {{- $resource = resources.FromString (printf "english/notes/%s" $urlStr) (readFile $imagePath) -}}
+  {{- if and (in (slice "/english/notes/" "/other/chess/") .Page.CurrentSection.RelPermalink) (findRE `^图片和附件/[0-9]{8}-[0-9]{3,}\.(png|jpg|jpeg|webp|gif)$` $urlStr) -}}
+    {{- $resourcePath := printf "%s%s" .Page.CurrentSection.File.Dir $urlStr -}}
+    {{- $imagePath := printf "content/%s" $resourcePath -}}
+    {{- $resource = resources.FromString $resourcePath (readFile $imagePath) -}}
     {{- $disableImageOptimizationMD = true -}}
   {{- end -}}
 {{- end -}}

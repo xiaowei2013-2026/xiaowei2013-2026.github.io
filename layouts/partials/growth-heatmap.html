@@ -3,10 +3,10 @@
 {{ $start := time.AsTime (printf "%d-01-01" $year) }}
 {{ $next := time.AsTime (printf "%d-01-01" (add $year 1)) }}
 {{ $dayCount := div ($next.Sub $start).Hours 24 }}
-{{ $diaries := dict }}{{ $readingLogs := dict }}
+{{ $diaries := dict }}
 {{ range where site.RegularPages "Section" "diary" }}{{ if eq .Date.Year $year }}{{ $key := .Date.Format "2006-01-02" }}{{ $items := index $diaries $key | default slice }}{{ $diaries = merge $diaries (dict $key ($items | append .)) }}{{ end }}{{ end }}
-{{ $recitationRecords := readFile "content/english/recitation/recitation-records.json" | transform.Unmarshal }}
-{{ range where site.RegularPages "Section" "reading" }}{{ if and (eq .Date.Year $year) (eq .CurrentSection.RelPermalink "/reading/logs/") }}{{ $key := .Date.Format "2006-01-02" }}{{ $items := index $readingLogs $key | default slice }}{{ $readingLogs = merge $readingLogs (dict $key ($items | append .)) }}{{ end }}{{ end }}
+{{ $recitationRecords := hugo.Data.recitation_records | default dict }}
+{{ $readingRecords := hugo.Data.reading_records | default dict }}
 
 <section class="growth-heatmap" aria-labelledby="growth-heatmap-title">
   <div class="growth-heatmap__heading">
@@ -28,23 +28,26 @@
         {{ $new := int (index $anki "new_cards" | default 0) }}{{ $unique := int (index $anki "unique_cards" | default 0) }}{{ $reviews := int (index $anki "reviews" | default 0) }}{{ $ankiMinutes := int (index $anki "minutes" | default 0) }}
         {{ $recitationNames := index $recitationRecords $key | default slice }}
         {{ $recitationCount := len $recitationNames }}{{ $recitationText := "未记录" }}{{ if gt $recitationCount 0 }}{{ $recitationText = delimit $recitationNames "、" }}{{ end }}
-        {{ $readPages := index $readingLogs $key | default slice }}{{ $readMinutes := 0 }}{{ $readPageCount := 0 }}
-        {{ range $readPages }}{{ $readMinutes = add $readMinutes (int (.Params.reading_minutes | default 0)) }}{{ $readPageCount = add $readPageCount (int (.Params.pages | default 0)) }}{{ end }}
-        {{ if lt $readMinutes 0 }}{{ $readMinutes = 0 }}{{ end }}
+        {{ $readingNames := index $readingRecords $key | default slice }}
+        {{ $readingCount := len $readingNames }}{{ $readingText := "未记录" }}{{ if gt $readingCount 0 }}{{ $readingText = delimit $readingNames "、" }}{{ end }}
         {{ $journalScore := 0 }}{{ if gt $diaryCount 0 }}{{ $journalScore = 100 }}{{ end }}
         {{ $wordPoints := add (mul $new 2) (div $unique 2) }}{{ if gt $wordPoints 50 }}{{ $wordPoints = 50 }}{{ end }}
         {{ $passagePoints := mul $recitationCount 10 }}{{ if gt $passagePoints 20 }}{{ $passagePoints = 20 }}{{ end }}
         {{ $englishPoints := add $wordPoints $passagePoints }}{{ $englishScore := div (mul $englishPoints 100) 70 }}{{ if gt $englishScore 100 }}{{ $englishScore = 100 }}{{ end }}
-        {{ $readingScore := div (mul $readMinutes 100) 30 }}{{ if gt $readingScore 100 }}{{ $readingScore = 100 }}{{ end }}
+        {{ $readingScore := 0 }}{{ if gt $readingCount 0 }}{{ $readingScore = 100 }}{{ end }}
         {{ $total := add (add (div (mul $journalScore 30) 100) (div (mul $englishScore 50) 100)) (div (mul $readingScore 20) 100) }}
         {{ $future := $date.After now }}
-        {{ $title := printf "%s｜综合 %d｜日记 %d 篇｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、背诵：%s｜阅读 %d 分钟、%d 页" $key $total $diaryCount $new $unique $reviews $ankiMinutes $recitationText $readMinutes $readPageCount }}
+        {{ $title := printf "%s｜综合 %d｜日记 %d 篇｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、背诵：%s｜阅读：%s" $key $total $diaryCount $new $unique $reviews $ankiMinutes $recitationText $readingText }}
         {{ $journalTitle := printf "%s｜日记 %d 篇" $key $diaryCount }}
         {{ $englishTitle := printf "%s｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、背诵：%s" $key $new $unique $reviews $ankiMinutes $recitationText }}
-        {{ $readingTitle := printf "%s｜阅读 %d 分钟、%d 页" $key $readMinutes $readPageCount }}
+        {{ $readingTitle := printf "%s｜阅读：%s" $key $readingText }}
         {{ $journalHref := "" }}{{ if gt $diaryCount 0 }}{{ $journalHref = (index $diaryPages 0).RelPermalink }}{{ end }}
         {{ $englishHref := "" }}{{ if gt $recitationCount 0 }}{{ with site.GetPage "/english/recitation" }}{{ $englishHref = .RelPermalink }}{{ end }}{{ end }}
-        {{ $readingHref := "" }}{{ if gt (len $readPages) 0 }}{{ $readingHref = (index $readPages 0).RelPermalink }}{{ end }}
+        {{ $readingHref := "" }}
+        {{ if gt $readingCount 0 }}
+          {{ range where site.RegularPages "Section" "reading" }}{{ if and (not $readingHref) (in $readingNames .Title) }}{{ $readingHref = .RelPermalink }}{{ end }}{{ end }}
+          {{ if not $readingHref }}{{ with site.GetPage "/reading" }}{{ $readingHref = .RelPermalink }}{{ end }}{{ end }}
+        {{ end }}
         {{ $totalHref := $journalHref }}{{ if not $totalHref }}{{ $totalHref = $englishHref }}{{ end }}{{ if not $totalHref }}{{ $totalHref = $readingHref }}{{ end }}
         {{ if $totalHref }}<a class="growth-day" href="{{ $totalHref }}" data-link-total="{{ $totalHref }}" data-link-journal="{{ $journalHref }}" data-link-english="{{ $englishHref }}" data-link-reading="{{ $readingHref }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" data-title-total="{{ $title }}" data-title-journal="{{ $journalTitle }}" data-title-english="{{ $englishTitle }}" data-title-reading="{{ $readingTitle }}" title="{{ $title }}" aria-label="{{ $title }}"></a>
         {{ else }}<span class="growth-day{{ if $future }} growth-day--future{{ end }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" data-title-total="{{ $title }}" data-title-journal="{{ $journalTitle }}" data-title-english="{{ $englishTitle }}" data-title-reading="{{ $readingTitle }}" title="{{ $title }}" aria-hidden="{{ eq $total 0 }}"></span>{{ end }}

@@ -17,9 +17,9 @@
 - `content/english/recitation/recitation-records.json`：手动填写日期和背诵文章名，供热力图读取
 - `content/english/notes/`：英语笔记
 - `content/english/exercises/`：英语题目、错题和解析
-- `content/reading/books/分类/`：每本书一个页面，放书籍信息、笔记和读后感
-- `content/reading/logs/年/月/`：每本书每天一条记录，按阅读分钟数参与热力图
-- `content/reading/other/`：不属于书籍的文章、清单等资料
+- `content/reading/分类/`：每本书或文章一个 Markdown，放内容、笔记和读后感；实际文件夹名见下文
+- `content/reading/reading-records.json`：手动记录日期和读了哪些书／文章，供热力图读取
+- `content/reading/other/`：其他类别的书籍、文章、清单等资料
 - `content/quotes/`：每日金句归档
 - `content/other/分类/`：其他兴趣的文档和图表，按分类组织，不按年份分组。分类说明和图表可写在 `_index.md` 中，具体文档放在该分类目录下。
 
@@ -86,29 +86,38 @@ python scripts/sync_anki_stats.py
 }
 ```
 
-上面第二天是格式示例，不是实际记录。每个日期只写一次，列表里每篇文章只写一次。保存有效 JSON 后本地预览更新；修改 Markdown 中的日期不会自动修改 JSON，需要分别维护。鼠标悬停显示当天的文章名，点击跳转到背诵材料目录。Anki、日记和阅读仍使用各自原有的数据来源。
+上面第二天是格式示例，不是实际记录。每个日期只写一次，列表里每篇文章只写一次。保存有效 JSON 后本地预览更新；修改 Markdown 中的日期不会自动修改 JSON，需要分别维护。鼠标悬停显示当天的文章名，点击跳转到背诵材料目录。Anki 和日记仍使用各自原有的数据来源，阅读 JSON 的用法见下文。
 
 ## 阅读与热力图
 
-阅读内容只写一份，再从两个方向查看：分类书架按书整理，书籍页自动列出读过它的日期；阅读时间线按日期排列，能看到当天读了哪些书。
+阅读下面直接放分类：`literature/`（文学）、`humanities/`（人文社科）、`technology/`（技术与科学）和 `other/`（其他）。没有额外的分类书架或阅读时间线目录。书籍、文章与笔记直接保存在对应分类中，原有内容保留；旧书架分类网址会跳转到新分类。
 
 先在合适的分类下创建书籍页，例如：
 
 ```powershell
-.\.tools\hugo\hugo.exe new content reading/books/literature/the-little-prince.md --kind reading-book
+.\.tools\hugo\hugo.exe new content reading/literature/小王子.md --kind reading-book
 ```
 
-把标题改成真实书名，并填写作者。`book_id` 是这本书的固定编号，例如 `the-little-prince`；今后即使调整分类，也不要改这个编号。已有“文学、人文社科、技术与科学”三个书籍分类，可以自行增加。不属于书籍的资料放在 `content/reading/other/`，不需要 `book_id`。
+把 `title` 改成真实书名，作者等信息按需要填写，正文持续补充笔记。也可以直接复制已有 Markdown 来写文章，不需要 `book_id`。分类卡片不按年份分组，显示最后修改日期。
 
-读完书的当天，为**每本书**写一条记录。文件名以日期开头，后面接书的编号：
+每日阅读只维护 `content/reading/reading-records.json`，格式与背诵记录一样，只写日期和读了哪些书／文章，无需填写分钟数、页数，也无需新建每日 Markdown。例如：
 
-```powershell
-.\.tools\hugo\hugo.exe new content reading/logs/2026/09/2026-09-30-the-little-prince.md --kind reading-log
+```json
+{
+  "2026-10-06": ["小王子", "40 条生活建议摘录"],
+  "2026-10-07": ["小王子"]
+}
 ```
 
-将记录的 `book_id` 填为 `the-little-prince`，填写 `reading_minutes`，可选填 `pages`，再把标题改成 `2026-09-30 · 小王子`。同一天读了两本书，就创建两个不同文件；热力图会把分钟数相加。书籍页的笔记不会额外计分。阅读 30 分钟达到阅读栏满格；综合热力图按日记 30%、英语 50%、阅读 20% 计算。
+上面是格式示例，实际文件初始为 `{}`，不包含虚构的阅读记录。同一天读多个内容，放在同一个列表里；继续读同一本书时，在新日期下再次填写书名。日期顺序不影响显示，每个日期及当天的名称不重复填写。没有本站笔记页的书名也可以记录。
 
-书籍和记录创建时默认公开。填写完整书籍信息及阅读记录后，发布前运行 `python scripts/check_reading.py`，检查书籍编号、日期和重复记录；GitHub Actions 也会执行这一步。
+热力图中，当天有阅读记录就点亮，悬停显示当天书名／文章名，不再计算阅读分钟数和页数。点击会打开名称与文档 `title` 对应的阅读页面，找不到对应页面时打开阅读首页。综合热力图仍按日记 30%、英语 50%、阅读 20% 计算。
+
+书籍模板保留可选的 `{{< reading-history >}}`，会从 JSON 中读取与页面 `title` 相同的名称，按日期从新到旧列出读过它的日子。重命名页面标题时，同步修改 JSON 中对应名称。此列表就在书籍正文里，无需单独的时间线页面。
+
+保存 JSON 后本地预览更新，commit、push 后线上更新。发布前运行 `python scripts/check_reading.py`，检查 JSON 格式、有效日期、空名称及重复记录；GitHub Actions 也会执行这一步。
+
+阅读和背诵的 JSON 由 `hugo.yaml` 中的数据挂载配置加载，仍直接编辑原来的文件。修改 JSON 会触发热力图和书籍阅读日期的重新渲染，无需修改 Markdown 或每次重启预览。若首次更改挂载配置后旧进程没有自动重载，停止预览后重新运行 `.\preview.cmd` 即可。
 
 ## 每日金句
 

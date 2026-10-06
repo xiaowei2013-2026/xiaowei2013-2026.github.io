@@ -12,6 +12,16 @@ hasCJKLanguage: true
 enableEmoji: true
 summaryLength: 100
 
+# Keep the editable JSON beside its content, and load it through Hugo's watched data system.
+module:
+  mounts:
+    - source: data
+      target: data
+    - source: content/reading/reading-records.json
+      target: data/reading_records.json
+    - source: content/english/recitation/recitation-records.json
+      target: data/recitation_records.json
+
 pagination:
   pagerSize: 12
 

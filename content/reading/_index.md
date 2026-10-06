@@ -1,12 +1,21 @@
 ---
 title: "阅读"
-description: "按书籍分类收藏，也按日期回顾每天读了什么。"
+description: "按分类整理书籍、文章和读书笔记。"
+aliases: ["/reading/books/"]
+groupByYear: false
+cascade:
+  params:
+    groupByYear: false
+    showDate: false
+    showDateUpdated: true
 ---
 
 {{< module-heatmap mode="reading" >}}
 
-同一份记录可以从两条路径查看：先找一本书，看哪些天读过；或按日期回顾，当天读了哪些书。阅读热力图累计当天各本书的阅读分钟数。
+按分类收藏书籍和文章，笔记直接写在对应文档中。热力图记录每天读过的内容。
 
-- [分类书架：按书查看](books/)
-- [阅读时间线：按日期查看](logs/)
-- [其他：文章与资料](other/)
+- [读书计划](读书计划/)
+- [文学](literature/)
+- [人文社科](humanities/)
+- [技术与科学](technology/)
+- [其他](other/)
