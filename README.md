@@ -4,6 +4,12 @@
 
 网站：<https://xiaowei2013-2026.github.io/>
 
+## 编辑方式与分支
+
+默认分支 `main` 在本地编辑 Markdown，运行 `.\preview.cmd` 后通过 `http://localhost:1313/` 预览，网页不提供编辑按钮。完成修改后统一 commit、push。
+
+`web-editor` 分支保留网页编辑、新建和删除文章、分类管理、封面选择等功能，作为另一种编辑方式。需要使用时先停止预览，再运行 `git switch web-editor` 和 `.\preview.cmd`；返回 Markdown 编辑时停止预览，运行 `git switch main`。切换前请先提交当前修改。两个分支的后续内容改动需要通过 Git 合并，不会自动同步。GitHub Pages 仍只从 `main` 发布。
+
 ## 内容目录
 
 - `content/diary/`：每日日记
@@ -16,24 +22,6 @@
 - `content/quotes/`：每日金句归档
 
 工作区文件统一放在 `growth-workspace/` 中。平时双击对应的 `日记编辑.code-workspace`、`英语编辑.code-workspace`、`阅读编辑.code-workspace`、`金句编辑.code-workspace` 或 `其他编辑.code-workspace`，只显示对应内容。也可以在 VS Code 中选择“文件 → 从文件打开工作区”。这些工作区直接编辑项目原文件，后续内容修改在对应工作区内完成即可；修改站点配置、模板或样式时，打开整个项目文件夹。
-
-## 本地网页编辑
-
-在项目根目录运行 `.\preview-editor.cmd`，打开 `http://localhost:1314/`。脚本自动启动 Hugo 和本地编辑服务，不用另开 `hugo server`；也可使用 Python 3.10 及以上运行 `python editor/server.py`。仅监听本机，公开网站仍使用 GitHub Pages。普通 `preview.cmd` 和线上构建不显示编辑入口。
-
-打开本地网页即可新建、编辑和删除，无需密码或登录。编辑服务只监听 `127.0.0.1`，保留 Host、请求来源和随机请求令牌校验，避免其他网页擅自调用写入接口。正式构建不启用编辑入口，也不部署这些本地接口。
-
-可修改文章标题和正文、上传或粘贴图片，点击“保存到本地”写回 Markdown。保存后等待 Hugo 更新，再显示原网站排版。含 Hugo shortcode 图表的页面暂不支持正文可视化保存。
-
-新建位置由当前页面决定，不再选择分类。例如在 `/reading/books/technology/` 点击“新建文章”，生成 `content/reading/books/technology/日期-标识/index.md`，直接放在当前分类目录，不额外套年/月目录。在某篇文章页新建，放在该文章所属目录；首页新建放在 `content/` 根目录。标签等没有对应内容文件夹的页面不提供新建入口。写好后保存才创建文件，取消不会产生空文章。
-
-书籍目录下自动生成 `entry_type: book` 和稳定的 `book_id`，可以填写作者、阅读状态。金句目录下填写原文、作者、出处和类型，并检查日期与原文重复。阅读记录目录下填写已有书籍的 `book_id`、分钟数和页数。文章默认 `draft: false`，本地与线上使用同一公开内容规则。
-
-“删除文章”确认后直接删除本地 Markdown，图片和附件保留，返回所属栏目。不设回收站；已提交过的文件可以通过 Git 恢复，未提交的新文件删除后无法通过 Git 找回。栏目 `_index.md` 不允许删除；文件被其他编辑器修改时拒绝覆盖或删除。原有历史回收站文件保留在 `.tools/` 中，新功能不再使用它们。
-
-网页只读写本地内容，不运行 Git 同步。写作完成后，在终端统一检查改动并 commit、push。GitHub Actions 部署成功后，线上才会更新。
-
-编辑器组件固定为 TOAST UI Editor 3.2.2，进入编辑时才从本地加载，关闭使用统计。保存前的文件备份在 `.tools/editor-backups/`；预览构建在 `.tools/editor-site/`，均不上传 GitHub。图片支持 PNG、JPEG、WebP（最大 8 MB），保留原始字节；取消编辑不会自动删除已上传图片。
 
 ## 写一篇新日记
 
