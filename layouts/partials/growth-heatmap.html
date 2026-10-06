@@ -38,12 +38,15 @@
         {{ $total := add (add (div (mul $journalScore 30) 100) (div (mul $englishScore 50) 100)) (div (mul $readingScore 20) 100) }}
         {{ $future := $date.After now }}
         {{ $title := printf "%s｜综合 %d｜日记 %d 篇｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、短文 %d 篇（%d 分钟）｜阅读 %d 分钟、%d 页" $key $total $diaryCount $new $unique $reviews $ankiMinutes $passages $passageMinutes $readMinutes $readPageCount }}
+        {{ $journalTitle := printf "%s｜日记 %d 篇" $key $diaryCount }}
+        {{ $englishTitle := printf "%s｜英语：新学 %d、复习 %d 张（%d 次，%d 分钟）、短文 %d 篇（%d 分钟）" $key $new $unique $reviews $ankiMinutes $passages $passageMinutes }}
+        {{ $readingTitle := printf "%s｜阅读 %d 分钟、%d 页" $key $readMinutes $readPageCount }}
         {{ $journalHref := "" }}{{ if gt $diaryCount 0 }}{{ $journalHref = (index $diaryPages 0).RelPermalink }}{{ end }}
         {{ $englishHref := "" }}{{ with $log }}{{ $englishHref = .RelPermalink }}{{ end }}
         {{ $readingHref := "" }}{{ if gt (len $readPages) 0 }}{{ $readingHref = (index $readPages 0).RelPermalink }}{{ end }}
         {{ $totalHref := $journalHref }}{{ if not $totalHref }}{{ $totalHref = $englishHref }}{{ end }}{{ if not $totalHref }}{{ $totalHref = $readingHref }}{{ end }}
-        {{ if $totalHref }}<a class="growth-day" href="{{ $totalHref }}" data-link-total="{{ $totalHref }}" data-link-journal="{{ $journalHref }}" data-link-english="{{ $englishHref }}" data-link-reading="{{ $readingHref }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" title="{{ $title }}" aria-label="{{ $title }}"></a>
-        {{ else }}<span class="growth-day{{ if $future }} growth-day--future{{ end }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" title="{{ $title }}" aria-hidden="{{ eq $total 0 }}"></span>{{ end }}
+        {{ if $totalHref }}<a class="growth-day" href="{{ $totalHref }}" data-link-total="{{ $totalHref }}" data-link-journal="{{ $journalHref }}" data-link-english="{{ $englishHref }}" data-link-reading="{{ $readingHref }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" data-title-total="{{ $title }}" data-title-journal="{{ $journalTitle }}" data-title-english="{{ $englishTitle }}" data-title-reading="{{ $readingTitle }}" title="{{ $title }}" aria-label="{{ $title }}"></a>
+        {{ else }}<span class="growth-day{{ if $future }} growth-day--future{{ end }}" data-total="{{ $total }}" data-journal="{{ $journalScore }}" data-english="{{ $englishScore }}" data-reading="{{ $readingScore }}" data-title-total="{{ $title }}" data-title-journal="{{ $journalTitle }}" data-title-english="{{ $englishTitle }}" data-title-reading="{{ $readingTitle }}" title="{{ $title }}" aria-hidden="{{ eq $total 0 }}"></span>{{ end }}
       {{ end }}
     </div>
   </div>
@@ -55,9 +58,12 @@
   const days=root.querySelectorAll('.growth-day[data-total]');
   function paint(mode){
     const linkKey={total:'linkTotal',journal:'linkJournal',english:'linkEnglish',reading:'linkReading'}[mode];
+    const titleKey={total:'titleTotal',journal:'titleJournal',english:'titleEnglish',reading:'titleReading'}[mode];
     days.forEach(day=>{
       const n=Number(day.dataset[mode]||0);
       day.dataset.level=n<=0?0:n<25?1:n<50?2:n<75?3:4;
+      day.setAttribute('title',day.dataset[titleKey]);
+      if(day.tagName==='A')day.setAttribute('aria-label',day.dataset[titleKey]);
       if(day.tagName==='A'){
         const href=day.dataset[linkKey];
         if(href)day.setAttribute('href',href);else day.removeAttribute('href');
