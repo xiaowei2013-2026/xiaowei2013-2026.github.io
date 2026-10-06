@@ -6,7 +6,8 @@
     }
   ],
   "settings": {
-    "explorer.compactFolders": false
+    "explorer.compactFolders": false,
+    "git.openRepositoryInParentFolders": "always"
   },
   "tasks": {
     "version": "2.0.0",
