@@ -2,6 +2,7 @@
 import os
 import socket
 import subprocess
+import threading
 import time
 import urllib.error
 import urllib.request
@@ -20,6 +21,7 @@ class HugoPreview:
         self.public_port = public_port
         self.executable = executable
         self.config = None
+        self.refresh_lock = threading.RLock()
 
     def start(self):
         executable = self.executable or self.root / '.tools' / 'hugo' / ('hugo.exe' if os.name == 'nt' else 'hugo')
@@ -53,10 +55,12 @@ class HugoPreview:
         raise RuntimeError('Hugo 启动超时，请查看 .tools/editor-hugo.log。')
 
     def refresh(self):
-        # A new section/static directory can be missed by Hugo's incremental cache.
-        # Changing this private overlay requests a full config reload and discovers it.
-        if self.config:
-            self.config.write_text('params:\n  inlineEditor: true\n# refresh ' + str(time.time_ns()) + '\n', encoding='utf-8')
+        # Hugo's live config reload can leave section/resource transitions partly
+        # rendered. Rebuild through a fresh Hugo process on the same private port,
+        # and return only once the complete site is ready behind the editor proxy.
+        with self.refresh_lock:
+            self.close()
+            self.start()
 
     def close(self):
         if self.process and self.process.poll() is None:

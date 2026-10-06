@@ -19,4 +19,11 @@
     <meta name="growth-article-path" content="{{ replace .File.Path "\\" "/" }}">
     <meta name="growth-article-revision" content="{{ crypto.SHA256 (readFile (printf "content/%s" .File.Path)) }}">
   {{ end }}
+  {{ if and .IsSection .File .Params.editor_id }}
+    <meta name="growth-category-revision" content="{{ crypto.SHA256 (readFile (printf "content/%s" .File.Path)) }}">
+    <meta name="growth-category-title" content="{{ .Title }}">
+  {{ end }}
+  {{ if and (or .IsHome .IsSection) .File }}
+    <meta name="growth-directory-revision" content="{{ crypto.SHA256 (readFile (printf "content/%s" .File.Path)) }}">
+  {{ end }}
 {{ end }}

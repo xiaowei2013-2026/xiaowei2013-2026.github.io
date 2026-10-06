@@ -37,6 +37,7 @@ class LocalRequestTests(unittest.TestCase):
                 self.assertIsNone(cookie)
                 token = config['token']
                 self.assertEqual(request('POST', '/api/save', {}, '')[0], 403)
+                self.assertEqual(request('POST', '/api/create-category', {}, '')[0], 403)
                 self.assertEqual(request('POST', '/api/save', {}, 'incorrect')[0], 403)
                 self.assertEqual(request('POST', '/api/save', {}, token, Origin='https://attacker.invalid')[0], 403)
                 self.assertEqual(request('POST', '/api/save', {}, token, Origin='null')[0], 403)

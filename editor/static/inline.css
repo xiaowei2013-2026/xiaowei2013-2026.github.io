@@ -24,3 +24,25 @@
 .growth-editor-toolbar [data-action="delete"] {color:#b42318;}
 
 .growth-editor-destination {overflow-wrap:anywhere;font-size:14px;}
+.growth-editor-category {color:inherit;background:#fff;border:1px solid #94a3b866;border-radius:12px;width:calc(100% - 32px);max-width:460px;max-height:85vh;overflow:auto;padding:24px;margin:auto;}
+.growth-editor-category::backdrop {background:#0f172a88;}
+.growth-editor-category h2 {font-size:22px;font-weight:700;margin-bottom:16px;}
+.growth-editor-category label {display:block;margin:14px 0;}
+.growth-editor-category input,.growth-editor-category textarea {display:block;width:100%;font:inherit;color:inherit;background:transparent;border:1px solid #94a3b866;border-radius:6px;padding:8px;margin-top:6px;}
+.growth-editor-category p {font-size:14px;overflow-wrap:anywhere;}
+.growth-editor-category form>div {display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+.growth-editor-category button {font:inherit;padding:7px 12px;border:1px solid #94a3b866;border-radius:7px;}
+.growth-editor-category button:disabled {opacity:.5;}
+.growth-category-status:empty {display:none;}
+.growth-category-status {margin-top:16px;}
+.dark .growth-editor-category {background:#1e293b;color:#f1f5f9;}
+.growth-category-message {flex-basis:100%;font-size:13px;}
+.growth-category-message:empty {display:none;}
+.growth-editor-controls [data-action="delete-category"] {color:#b42318;}
+.growth-editor-cover {max-width:65ch;border:1px solid #94a3b866;border-radius:8px;padding:14px;margin:16px 0;min-width:0;}
+.growth-editor-cover legend {font-weight:600;padding:0 6px;}
+.growth-editor-cover p,.growth-editor-cover span {font-size:13px;display:block;margin-bottom:10px;overflow-wrap:anywhere;}
+.growth-editor-cover input {display:block;max-width:100%;font-size:14px;margin:8px 0;}
+.growth-editor-cover img {display:block;width:100%;max-width:360px;max-height:200px;object-fit:contain;margin:12px 0;border-radius:6px;}
+.growth-editor-cover button {font:inherit;font-size:13px;border:1px solid #94a3b866;border-radius:6px;padding:5px 10px;}
+.growth-editor-cover[hidden],.growth-editor-cover [hidden] {display:none!important;}

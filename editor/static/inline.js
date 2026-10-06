@@ -2,16 +2,39 @@
   'use strict';
   const contextDirectory = document.querySelector('meta[name="growth-content-directory"]')?.content;
   const parentURL = document.querySelector('meta[name="growth-parent-url"]')?.content || '/';
+  const categoryRevision = document.querySelector('meta[name="growth-category-revision"]')?.content;
+  const categoryTitle = document.querySelector('meta[name="growth-category-title"]')?.content;
   let source = document.querySelector('meta[name="growth-article-path"]')?.content;
   let heading = source && document.querySelector('#single_header h1');
   let body = source && document.querySelector('.article-content');
   let token = '', ready = false, article = null, editor = null;
   let busy = false, uploading = 0, baseline = '', libraries = null, reloading = false;
   let creating = false, identifier = '', newFields = null, targetURL = location.pathname;
+  let coverSelection = null, coverPreviewURL = '';
   const controls = document.createElement('div');
   controls.className = 'growth-editor-controls';
-  controls.innerHTML = '<button type="button" data-action="new" hidden>新建文章</button>';
+  controls.innerHTML = '<button type="button" data-action="new" hidden>新建文章</button><button type="button" data-action="new-category" hidden>新建分类</button><button type="button" data-action="delete-category" hidden>删除分类</button><span class="growth-category-message" role="status" aria-live="polite"></span>';
   const newButton = controls.querySelector('[data-action="new"]');
+  const categoryButton = controls.querySelector('[data-action="new-category"]');
+  const deleteCategoryButton = controls.querySelector('[data-action="delete-category"]');
+  const categoryMessage = controls.querySelector('.growth-category-message');
+  deleteCategoryButton.addEventListener('click', async () => {
+    if (!ready || editor || busy || uploading || !categoryRevision || !contextDirectory) return;
+    if (!confirm('删除本地分类“' + categoryTitle + '”？只能删除空分类，父页面的分类链接也会移除。')) return;
+    busy = true; updateControls(); categoryMessage.textContent = '正在删除空分类…';
+    try {
+      const result = await api('/api/delete-category', {directory:contextDirectory, revision:categoryRevision});
+      categoryMessage.textContent = '分类已删除，正在更新页面…';
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const response = await fetch(location.pathname, {cache:'no-store'});
+        await response.text();
+        if (response.status === 404) break;
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      await openUpdatedParent(result);
+    } catch (error) {categoryMessage.textContent = error.message;}
+    finally {busy = false; updateControls();}
+  });
   document.querySelector('#main-content')?.prepend(controls);
   const toolbar = document.createElement('div');
   toolbar.className = 'growth-editor-toolbar';
@@ -26,11 +49,90 @@
   const mount = document.createElement('div');
   mount.className = 'growth-editor-mount not-prose';
   mount.hidden = true;
+  const coverPanel = document.createElement('fieldset');
+  coverPanel.className = 'growth-editor-cover'; coverPanel.hidden = true;
+  coverPanel.innerHTML = '<legend>封面图片（可选）</legend><p>选择本地图片，保存时复制到项目中。封面显示在文章列表，不会自动插入正文。</p><label>选择封面<input type="file" accept="image/png,image/jpeg,image/webp" aria-label="选择封面图片"></label><img alt="封面预览" hidden><span class="growth-cover-name"></span><button type="button" hidden>取消选择</button>';
+  const coverInput = coverPanel.querySelector('input');
+  const coverPreview = coverPanel.querySelector('img');
+  const coverName = coverPanel.querySelector('span');
+  const coverCancel = coverPanel.querySelector('button');
+  function resetCover() {
+    coverSelection = null; coverInput.value = '';
+    if (coverPreviewURL) URL.revokeObjectURL(coverPreviewURL);
+    coverPreviewURL = '';
+    const current = article?.cover_url || '';
+    coverPreview.hidden = !current;
+    if (current) coverPreview.src = current; else coverPreview.removeAttribute('src');
+    coverName.textContent = current ? '已有封面；不重新选择时保持原图。' : '尚未选择封面。';
+    coverCancel.hidden = true;
+  }
+  coverCancel.addEventListener('click', () => {if (!busy && !uploading) resetCover();});
+  coverInput.addEventListener('change', async () => {
+    const file = coverInput.files[0]; if (!file || busy || uploading) return;
+    uploading++; updateControls(); status.textContent = '正在读取封面图片…';
+    try {
+      if (file.size > 8 * 1024 * 1024) throw new Error('封面不能超过 8 MB');
+      if (!/\.(png|jpe?g|webp)$/i.test(file.name)) throw new Error('封面支持 PNG、JPEG、WebP 图片');
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      let binary = '';
+      for (let offset = 0; offset < bytes.length; offset += 16384) binary += String.fromCharCode(...bytes.subarray(offset, offset + 16384));
+      if (coverPreviewURL) URL.revokeObjectURL(coverPreviewURL);
+      coverSelection = {data:btoa(binary)}; coverPreviewURL = URL.createObjectURL(file);
+      coverPreview.src = coverPreviewURL; coverPreview.hidden = false;
+      coverName.textContent = file.name + ' · 点击保存后复制原图'; coverCancel.hidden = false;
+      status.textContent = '封面已选好，正文可只写文字。点击保存后生效。';
+    } catch (error) {coverInput.value = ''; status.textContent = error.message;}
+    finally {uploading--; updateControls();}
+  });
   if (heading && body) {
     document.querySelector('#single_header').append(toolbar);
     heading.after(titleInput);
+    titleInput.after(coverPanel);
     body.before(mount);
   }
+  const categoryDialog = document.createElement('dialog');
+  categoryDialog.className = 'growth-editor-category';
+  categoryDialog.setAttribute('aria-label', '新建分类');
+  categoryDialog.innerHTML = '<form><h2>新建分类</h2><p class="growth-category-parent"></p><label>分类名称<input name="title" maxlength="100" required placeholder="例如：工具"></label><label>目录名（可选）<input name="slug" maxlength="64" pattern="[a-z0-9][a-z0-9-]*" placeholder="例如：tools，留空自动生成"></label><label>说明（可选）<textarea name="description" rows="3" maxlength="2000"></textarea></label><p class="growth-category-status" role="status" aria-live="polite"></p><div><button type="button">取消</button><button type="submit">创建分类</button></div></form>';
+  document.body.append(categoryDialog);
+  const categoryForm = categoryDialog.querySelector('form');
+  const categoryStatus = categoryDialog.querySelector('.growth-category-status');
+  let categoryIdentifier = '';
+  categoryDialog.querySelector('[type="button"]').addEventListener('click', () => {if (!busy) categoryDialog.close();});
+  categoryDialog.addEventListener('cancel', event => {if (busy) event.preventDefault();});
+  categoryButton.addEventListener('click', () => {
+    if (!ready || editor || busy || uploading || contextDirectory === undefined) return;
+    categoryForm.reset(); categoryStatus.textContent = '';
+    categoryIdentifier = crypto.randomUUID().replaceAll('-', '');
+    categoryDialog.querySelector('.growth-category-parent').textContent = '在当前目录下创建：content/' + (contextDirectory ? contextDirectory + '/' : '');
+    categoryDialog.showModal(); categoryForm.elements.title.focus();
+  });
+  categoryForm.addEventListener('submit', async event => {
+    event.preventDefault(); if (busy || uploading || !categoryForm.reportValidity()) return;
+    busy = true; updateControls();
+    const data = {directory:contextDirectory, title:categoryForm.elements.title.value,
+      slug:categoryForm.elements.slug.value, description:categoryForm.elements.description.value, identifier:categoryIdentifier};
+    categoryForm.querySelectorAll('input,textarea,button').forEach(element => {element.disabled = true;});
+    categoryStatus.textContent = '正在创建本地分类…';
+    try {
+      const result = await api('/api/create-category', data);
+      categoryStatus.textContent = '分类已创建，正在更新页面…';
+      for (let attempt = 0; attempt < 30; attempt++) {
+        const response = await fetch(result.category.url, {cache:'no-store'});
+        const rendered = new DOMParser().parseFromString(await response.text(), 'text/html');
+        if (response.ok && rendered.querySelector('meta[name="growth-content-directory"]')?.content === result.category.directory) {
+          reloading = true; location.assign(result.category.url); return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+      }
+      const link = document.createElement('a'); link.href = result.category.url; link.textContent = '打开新分类';
+      categoryStatus.textContent = '分类已创建，稍后可访问：'; categoryStatus.append(link);
+    } catch (error) {categoryStatus.textContent = error.message;}
+    finally {
+      busy = false; updateControls();
+      categoryForm.querySelectorAll('input,textarea,button').forEach(element => {element.disabled = false;});
+    }
+  });
   async function initializeLocalEditor() {
     const response = await fetch('/api/config', {cache: 'no-store'});
     const config = await response.json();
@@ -54,25 +156,46 @@
     }
     return result;
   }
+  async function openUpdatedParent(result) {
+    for (let attempt = 0; attempt < 30; attempt++) {
+      const response = await fetch(parentURL, {cache:'no-store'});
+      const html = await response.text();
+      const rendered = new DOMParser().parseFromString(html, 'text/html');
+      const directory = rendered.querySelector('meta[name="growth-content-directory"]')?.content;
+      const revision = rendered.querySelector('meta[name="growth-directory-revision"]')?.content;
+      if (response.ok && html.trimEnd().endsWith('</html>') && rendered.querySelector('#main-content') &&
+          directory === result.parent_directory && (!result.parent_revision || revision === result.parent_revision)) break;
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    reloading = true; location.assign(parentURL);
+  }
   function updateControls() {
     newButton.hidden = !ready || !!editor || contextDirectory === undefined;
     newButton.disabled = busy || uploading > 0;
+    categoryButton.hidden = !ready || !!editor || contextDirectory === undefined;
+    categoryButton.disabled = busy || uploading > 0;
+    deleteCategoryButton.hidden = !ready || !!editor || !categoryRevision || !contextDirectory;
+    deleteCategoryButton.disabled = busy || uploading > 0;
     buttons.edit.hidden = !ready || !!editor || !article?.editable;
     buttons.delete.hidden = !ready || !!editor || !article || article.kind !== '文章';
     ['cancel', 'save'].forEach(name => {buttons[name].hidden = !editor;});
     Object.values(buttons).forEach(button => {button.disabled = busy || uploading > 0;});
     buttons.save.disabled ||= !ready;
+    coverPanel.hidden = !editor;
+    coverInput.disabled = busy || uploading > 0;
+    coverCancel.disabled = busy || uploading > 0;
     if (editor) {
       mount.inert = busy;
       titleInput.disabled = busy;
       if (newFields) newFields.inert = busy;
     }
   }
-  const dirty = () => !!editor && (creating || titleInput.value !== article.title || editor.getMarkdown() !== baseline);
+  const dirty = () => !!editor && (creating || !!coverSelection || titleInput.value !== article.title || editor.getMarkdown() !== baseline);
   function cancel() {
     if (busy || uploading || (dirty() && !confirm('还有未保存的修改，确定放弃吗？'))) return false;
     if (editor) editor.destroy();
     editor = null;
+    resetCover(); coverPanel.hidden = true;
     if (creating) {creating = false; reloading = true; location.reload(); return false;}
     mount.replaceChildren();
     mount.hidden = true;
@@ -117,6 +240,7 @@
     busy = true; updateControls(); status.textContent = '正在打开编辑…';
     try {
       article = (await api('/api/article?path=' + encodeURIComponent(source))).article;
+      resetCover();
       if (!article.editable) throw new Error('此页包含专用图表组件，暂时不能编辑。');
       await loadLibraries();
       titleInput.value = article.title;
@@ -159,7 +283,8 @@
       const today = parts.year + '-' + parts.month + '-' + parts.day;
       const day = newFields.querySelector('[name="date"]'); day.value = today; day.max = today;
       titleInput.value = ''; titleInput.placeholder = '输入文章标题'; titleInput.hidden = false;
-      mount.hidden = false; panel.append(newFields, titleInput, toolbar, mount); main.append(panel);
+      article = null; resetCover();
+      mount.hidden = false; panel.append(newFields, titleInput, coverPanel, toolbar, mount); main.append(panel);
       heading = panel.querySelector('h1'); body = document.createElement('div');
       identifier = crypto.randomUUID().replaceAll('-', ''); creating = true;
       editor = new toastui.Editor({el:mount,height:'auto',minHeight:'500px',initialEditType:'wysiwyg',
@@ -196,14 +321,14 @@
         if (creating) {
           const value = name => newFields.querySelector('[name="' + name + '"]')?.value || '';
           const result = await api('/api/create', {directory:contextDirectory,date:value('date'),title:titleInput.value,
-            body:editor.getMarkdown(),identifier,quote_fields:{quote:value('quote'),author:value('author'),work:value('work'),kind:value('kind')},reading_fields:{author:value('author'),status:value('status'),book_id:value('book_id'),reading_minutes:value('reading_minutes'),pages:value('pages')}});
+            body:editor.getMarkdown(),identifier,cover:coverSelection || undefined,quote_fields:{quote:value('quote'),author:value('author'),work:value('work'),kind:value('kind')},reading_fields:{author:value('author'),status:value('status'),book_id:value('book_id'),reading_minutes:value('reading_minutes'),pages:value('pages')}});
           article = result.article; targetURL = result.url; source = article.path; creating = false;
           newFields.hidden = true;
         } else {
           article = (await api('/api/save', {path: article.path, title: titleInput.value,
-            body: editor.getMarkdown(), revision: article.revision})).article;
+            body: editor.getMarkdown(), revision: article.revision, cover:coverSelection || undefined})).article;
         }
-        baseline = editor.getMarkdown(); titleInput.value = article.title; saved = true;
+        resetCover(); baseline = editor.getMarkdown(); titleInput.value = article.title; saved = true;
       }
       message = '已保存到本地。';
       await reloadRendered(message);
@@ -218,7 +343,7 @@
     if (!confirm('删除本地文章“' + article.title + '”？图片会保留。已有提交可通过 Git 恢复，未提交的新文章删除后无法恢复。')) return;
     busy = true; updateControls(); status.textContent = '正在删除本地文章…';
     try {
-      await api('/api/delete', {path: article.path, revision: article.revision, url: location.pathname});
+      const result = await api('/api/delete', {path: article.path, revision: article.revision, url: location.pathname});
       status.textContent = '本地文件已删除，正在更新栏目…';
       for (let attempt = 0; attempt < 20; attempt++) {
         const response = await fetch(location.pathname, {cache:'no-store'});
@@ -226,7 +351,7 @@
         if (response.status === 404) break;
         await new Promise(resolve => setTimeout(resolve, 250));
       }
-      reloading = true; location.assign(parentURL);
+      await openUpdatedParent(result);
     } catch (error) {status.textContent = error.message;}
     finally {busy = false; updateControls();}
   }
