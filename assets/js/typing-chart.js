@@ -22,32 +22,9 @@
       } catch (error) { throw new Error(`第 ${i + 1} 条：${error.message}`); }
     }).sort((a, b) => a.ms - b.ms);
   }
-  // CSV parser supports quoted commas, escaped quotes and multiline content.
-  function csv(text) {
-    const rows = []; let row = [], field = '', quoted = false;
-    text = text.replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
-    for (let i = 0; i < text.length; i++) {
-      const c = text[i];
-      if (c === '"') {
-        if (quoted && text[i + 1] === '"') { field += '"'; i++; }
-        else quoted = !quoted;
-      } else if (!quoted && (c === ',' || c === '\n')) {
-        row.push(field); field = '';
-        if (c === '\n') { if (row.some(v => v.trim())) rows.push(row); row = []; }
-      } else field += c;
-    }
-    if (quoted) throw new Error('CSV 引号未闭合。');
-    row.push(field); if (row.some(v => v.trim())) rows.push(row);
-    const header = rows.shift()?.map(v => v.trim());
-    if (!header || header.join(',') !== '时间,速度,内容') throw new Error('CSV 首行必须为：时间,速度,内容。请使用 UTF-8 编码。');
-    return rows.map((values, i) => {
-      if (values.length !== 3) throw new Error(`CSV 第 ${i + 2} 行需要三列；包含逗号的内容请用双引号包围。`);
-      return { time: values[0], speed: values[1].trim(), content: values[2] };
-    });
-  }
   document.querySelectorAll('.typing-chart').forEach(root => {
     const svg = root.querySelector('[data-plot]'), status = root.querySelector('[data-status]'), detail = root.querySelector('[data-detail]');
-    const rows = root.querySelector('[data-rows]'), exportButton = root.querySelector('[data-export]');
+    const rows = root.querySelector('[data-rows]');
     let records = [];
     function element(tag, attrs = {}, text) {
       const node = document.createElementNS(ns, tag);
@@ -56,10 +33,12 @@
       svg.append(node); return node;
     }
     function render() {
-      svg.replaceChildren(); rows.replaceChildren(); exportButton.disabled = !records.length;
+      const width = Math.max(240, svg.clientWidth);
+      svg.setAttribute('viewBox', `0 0 ${width} 360`);
+      svg.replaceChildren(); rows.replaceChildren();
       detail.textContent = '选择一个数据点查看详情。';
-      if (!records.length) { element('text', { x: 450, y: 160, 'text-anchor': 'middle' }, '还没有练习记录，请导入 CSV。'); return; }
-      const left = 70, right = 870, top = 30, bottom = 270;
+      if (!records.length) { element('text', { x: width / 2, y: 160, 'text-anchor': 'middle' }, '还没有练习记录。'); return; }
+      const left = 58, right = width - 18, top = 30, bottom = 270;
       let min = records[0].ms, max = records.at(-1).ms;
       if (min === max) { min -= 60000; max += 60000; }
       const ceiling = Math.max(10, Math.ceil(Math.max(...records.map(r => r.speed)) / 10) * 10);
@@ -71,12 +50,13 @@
         element('text', { x: left - 12, y: y(speed) + 4, 'text-anchor': 'end' }, Number(speed.toFixed(1)));
       }
       element('text', { x: left, y: 16 }, '速度（字/分钟）');
-      element('text', { x: 470, y: 350, 'text-anchor': 'middle' }, '练习时间（北京时间，精确到分钟）');
-      for (let i = 0; i <= 4; i++) {
-        const ms = min + (max - min) * i / 4;
+      element('text', { x: width / 2, y: 350, 'text-anchor': 'middle' }, '练习时间（北京时间）');
+      const intervals = width < 360 ? 1 : width < 600 ? 2 : 4;
+      for (let i = 0; i <= intervals; i++) {
+        const ms = min + (max - min) * i / intervals;
         const label = dateFormatter.format(new Date(ms));
-        element('text', { x: x(ms), y: 298, 'text-anchor': i === 0 ? 'start' : i === 4 ? 'end' : 'middle' }, label.slice(0, 10));
-        element('text', { x: x(ms), y: 315, 'text-anchor': i === 0 ? 'start' : i === 4 ? 'end' : 'middle' }, label.slice(11));
+        element('text', { x: x(ms), y: 298, 'text-anchor': i === 0 ? 'start' : i === intervals ? 'end' : 'middle' }, label.slice(0, 10));
+        element('text', { x: x(ms), y: 315, 'text-anchor': i === 0 ? 'start' : i === intervals ? 'end' : 'middle' }, label.slice(11));
       }
       element('polyline', { points: records.map(r => `${x(r.ms)},${y(r.speed)}`).join(' '), class: 'chart-line' });
       records.forEach(record => {
@@ -92,17 +72,12 @@
     }
     try { records = normalize(JSON.parse(root.querySelector('[data-records]').textContent)); render(); status.textContent = `共 ${records.length} 次练习。`; }
     catch (error) { status.textContent = error.message; }
-    root.querySelector('[data-import]').addEventListener('change', async event => {
-      const file = event.target.files[0]; if (!file) return;
-      try { const imported = normalize(csv(await file.text())); records = imported; render(); status.textContent = `已预览 ${records.length} 次练习（替换当前预览），尚未保存到网站。`; }
-      catch (error) { status.textContent = `导入失败：${error.message}`; }
-      event.target.value = '';
-    });
-    exportButton.addEventListener('click', () => {
-      const data = records.map(({ time, speed, content }) => ({ time, speed, content }));
-      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2) + '\n'], { type: 'application/json' }));
-      const link = document.createElement('a'); link.href = url; link.download = 'typing_records.json'; link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-    });
+    let lastWidth = svg.clientWidth;
+    new ResizeObserver(() => {
+      if (svg.clientWidth !== lastWidth) {
+        lastWidth = svg.clientWidth;
+        render();
+      }
+    }).observe(svg);
   });
 })();

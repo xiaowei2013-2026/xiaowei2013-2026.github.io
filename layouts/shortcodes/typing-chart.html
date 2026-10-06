@@ -1,19 +1,19 @@
 {{ $css := resources.Get "css/typing-chart.css" | minify | fingerprint }}
 {{ $js := resources.Get "js/typing-chart.js" | minify | fingerprint }}
+{{ $records := slice }}
+{{ with .Page.Resources.GetMatch "type-records.json" }}
+  {{ $records = .Content | transform.Unmarshal }}
+{{ else }}
+  {{ errorf "打字图表缺少同目录的数据文件 type-records.json：%s" .Page.File.Path }}
+{{ end }}
 <link rel="stylesheet" href="{{ $css.RelPermalink }}">
 <section class="typing-chart" aria-label="五笔打字速度记录">
   <h2>打字速度变化</h2>
   <p>横轴为练习时间，纵轴为速度（字/分钟）。悬停、点按或用 Tab 选中数据点查看练习内容。</p>
-  <div class="typing-chart__tools">
-    <label>导入 CSV <input type="file" accept=".csv,text/csv" data-import></label>
-    <a href="{{ "examples/typing-records.csv" | relURL }}" download>下载三列示例</a>
-    <button type="button" data-export disabled>下载记录 JSON</button>
-  </div>
-  <p class="typing-chart__hint">导入仅在当前浏览器预览。要保留并发布，请下载 JSON，替换项目的 data/typing_records.json，再构建网站。示例数据用于演示。</p>
   <p data-status role="status" aria-live="polite"></p>
   <div class="typing-chart__scroll"><svg data-plot role="img" aria-label="打字速度随时间变化的折线图" viewBox="0 0 900 360"></svg></div>
   <p class="typing-chart__detail" data-detail aria-live="polite">选择一个数据点查看详情。</p>
   <details><summary>查看全部练习记录</summary><div class="typing-chart__scroll"><table><thead><tr><th>时间（北京时间）</th><th>速度（字/分钟）</th><th>练习内容</th></tr></thead><tbody data-rows></tbody></table></div></details>
-  <script type="application/json" data-records>{{ hugo.Data.typing_records | default slice | jsonify | safeJS }}</script>
+  <script type="application/json" data-records>{{ $records | jsonify | safeJS }}</script>
 </section>
 <script src="{{ $js.RelPermalink }}" defer></script>

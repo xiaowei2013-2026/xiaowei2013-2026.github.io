@@ -4,6 +4,9 @@ defaultContentLanguage: "zh-cn"
 title: "威的成长记录"
 theme: "blowfish"
 timeZone: "Asia/Shanghai"
+enableGitInfo: true
+frontmatter:
+  lastmod: ["lastmod", ":git", ":fileModTime", "date"]
 enableRobotsTXT: true
 hasCJKLanguage: true
 enableEmoji: true

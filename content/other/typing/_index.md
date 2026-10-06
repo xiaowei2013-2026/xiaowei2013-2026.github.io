@@ -7,5 +7,4 @@ showHero: false
 记录五笔字根学习、打字练习、速度和准确率。
 
 - [五笔打字学习笔记](wubi-notes/)
-
-{{< typing-chart >}}
+- [打字速度记录](typing-speed/)

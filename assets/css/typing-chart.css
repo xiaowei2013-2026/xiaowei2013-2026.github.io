@@ -1,4 +1,4 @@
-.typing-chart { margin: 2rem 0; padding: 1.2rem; border: 1px solid rgb(var(--color-neutral-300)); border-radius: 1rem; }
+.typing-chart { margin: 2rem 0; padding: 1.2rem; min-width: 0; border: 1px solid rgb(var(--color-neutral-300)); border-radius: 1rem; }
 .typing-chart h2 { margin-top: 0; }
 .typing-chart__tools { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }
 .typing-chart__tools input { display: block; max-width: 100%; font-size: .85rem; }
@@ -6,7 +6,7 @@
 .typing-chart__tools button:disabled { opacity: .4; }
 .typing-chart__hint { font-size: .85rem; opacity: .75; }
 .typing-chart__scroll { overflow-x: auto; }
-.typing-chart svg { width: 100%; min-width: 650px; height: auto; }
+.typing-chart svg { display: block; width: 100%; min-width: 0; height: auto; }
 .typing-chart svg text { fill: currentColor; font: 12px sans-serif; }
 .typing-chart .chart-grid { stroke: currentColor; opacity: .12; }
 .typing-chart .chart-line { stroke: rgb(var(--color-primary-500)); stroke-width: 3; fill: none; }

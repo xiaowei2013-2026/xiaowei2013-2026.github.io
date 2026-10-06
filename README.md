@@ -20,6 +20,7 @@
 - `content/reading/logs/年/月/`：每本书每天一条记录，按阅读分钟数参与热力图
 - `content/reading/other/`：不属于书籍的文章、清单等资料
 - `content/quotes/`：每日金句归档
+- `content/other/分类/`：其他兴趣的文档和图表，按分类组织，不按年份分组。分类说明和图表可写在 `_index.md` 中，具体文档放在该分类目录下。
 
 工作区文件统一放在 `growth-workspace/` 中。平时双击对应的 `日记编辑.code-workspace`、`英语编辑.code-workspace`、`阅读编辑.code-workspace`、`金句编辑.code-workspace` 或 `其他编辑.code-workspace`，只显示对应内容。也可以在 VS Code 中选择“文件 → 从文件打开工作区”。这些工作区直接编辑项目原文件，后续内容修改在对应工作区内完成即可；修改站点配置、模板或样式时，打开整个项目文件夹。
 
@@ -52,6 +53,12 @@
 也可以在任意编辑工作区中执行“终端 → 运行任务 → 预览网站”，或双击项目根目录的 `preview.cmd`。预览使用与线上发布相同的 `production` 环境和压缩设置，并关闭快速渲染以便完整更新页面。所有文章按公开内容管理，本地和线上使用同一套内容规则。同一时间只运行一个预览任务，启动前先结束旧任务；修改任务配置后，已运行的预览服务也需要重新启动。
 
 本地显示当前磁盘上的文件，线上显示最近一次成功部署的版本。本地修改会触发预览更新，但只有提交并推送到 `main`，且 GitHub Actions 部署成功后，线上才会更新。保持两边的内容、数据、Hugo/主题版本及构建日期一致，才能获得一致的展示；本地地址、实时刷新和线上域名会有所不同。
+
+## 五笔笔记与图表
+
+五笔分类首页只展示入口。学习笔记在 `content/other/typing/wubi-notes/index.md`，打字速度图表在 `content/other/typing/typing-speed/index.md`。这两页显示最后更新时间：已提交文件取该文件最近一次 Git 提交的时间，未提交过的新文件回退到文件修改时间；不用填写虚构的发布日期。已跟踪文件的更新时间在提交后更新，本地和线上采用同一规则。
+
+图表记录直接编辑 `content/other/typing/typing-speed/type-records.json`，与图表 Markdown 放在同一目录。每条记录包含 `time`（北京时间 `YYYY-MM-DD HH:mm`）、`speed`（字/分钟）和 `content`（练习内容），保存后本地预览更新，提交并推送后线上更新。图表标题、说明在同目录的 `index.md` 中修改，配色和样式在 `assets/css/typing-chart.css`，绘图逻辑在 `assets/js/typing-chart.js`。
 
 ## 同步 Anki 热力图
 
