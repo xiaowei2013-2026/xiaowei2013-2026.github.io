@@ -13,7 +13,8 @@
 ## 内容目录
 
 - `content/diary/`：每日日记
-- `content/english/study/`：短文与每日英语学习记录
+- `content/english/recitation/`：主题 Markdown 和背诵记录 JSON 放在同一层，一个 Markdown 文档可以放多篇短文，每篇标注背诵日期
+- `content/english/recitation/recitation-records.json`：手动填写日期和背诵文章名，供热力图读取
 - `content/english/notes/`：英语笔记
 - `content/english/exercises/`：英语题目、错题和解析
 - `content/reading/books/分类/`：每本书一个页面，放书籍信息、笔记和读后感
@@ -54,6 +55,10 @@
 
 本地显示当前磁盘上的文件，线上显示最近一次成功部署的版本。本地修改会触发预览更新，但只有提交并推送到 `main`，且 GitHub Actions 部署成功后，线上才会更新。保持两边的内容、数据、Hugo/主题版本及构建日期一致，才能获得一致的展示；本地地址、实时刷新和线上域名会有所不同。
 
+## 英语笔记的图片
+
+英语笔记保留原来的 Markdown 文件名，图片统一放在 `content/english/notes/图片和附件/`。图片按“整理日期＋序号”命名，例如 `20261006-001.png`；日期表示整理日期，不代表图片拍摄日期。同一天新增图片继续使用未占用的序号，文档引用写作 `![说明](图片和附件/20261006-001.png)`，无需为每篇笔记创建图片文件夹。
+
 ## 五笔笔记与图表
 
 五笔分类首页只展示入口。学习笔记在 `content/other/typing/wubi-notes/index.md`，打字速度图表在 `content/other/typing/typing-speed/index.md`。这两页显示最后更新时间：已提交文件取该文件最近一次 Git 提交的时间，未提交过的新文件回退到文件修改时间；不用填写虚构的发布日期。已跟踪文件的更新时间在提交后更新，本地和线上采用同一规则。
@@ -68,11 +73,20 @@ python scripts/sync_anki_stats.py
 
 脚本默认统计“英语”及其子牌组，只导出日期、新学数量、复习数量和用时，不上传卡片内容或 Anki 数据库。
 
-创建短文学习记录：
+## 背诵材料与热力图
 
-```powershell
-.\.tools\hugo\hugo.exe new content english/study/2026/09/2026-09-23.md --kind english-study
+材料按主题直接放在 `content/english/recitation/`，例如 `关于梦想.md`，无需额外的 `materials` 或每日记录目录。同一文档内可以添加多篇短文，每篇使用 `## 短文名称`，下面写 `背诵日期：2026-10-06`，再写英文原文、翻译或笔记。无需每天新建一个 Markdown 记录。
+
+热力图只读取 `content/english/recitation/recitation-records.json` 中的背诵记录，不自动扫描文档里的日期。手动维护，日期使用 `YYYY-MM-DD`，每个日期对应当天背诵的文章名列表。同一天多篇文章写在同一个列表中，复习时也可以在新的日期下再次填写同一篇文章名；顺序不影响显示。
+
+```json
+{
+  "2026-10-06": ["梦想的力量"],
+  "2026-10-07": ["梦想的力量", "另一篇短文"]
+}
 ```
+
+上面第二天是格式示例，不是实际记录。每个日期只写一次，列表里每篇文章只写一次。保存有效 JSON 后本地预览更新；修改 Markdown 中的日期不会自动修改 JSON，需要分别维护。鼠标悬停显示当天的文章名，点击跳转到背诵材料目录。Anki、日记和阅读仍使用各自原有的数据来源。
 
 ## 阅读与热力图
 
