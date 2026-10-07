@@ -1,0 +1,12 @@
+.weight-chart{margin:2rem 0;padding:1rem;min-width:0;border:1px solid rgb(var(--color-neutral-300));border-radius:1rem}
+.weight-chart h2{margin-top:0}
+.weight-chart svg{display:block;width:100%;height:auto}
+.weight-chart svg text{fill:currentColor;font:12px sans-serif}
+.weight-chart .chart-grid{stroke:currentColor;opacity:.15}
+.weight-chart .chart-line{stroke:rgb(var(--color-primary-500));stroke-width:3;fill:none}
+.weight-chart .chart-dot{fill:rgb(var(--color-primary-500));stroke:rgb(var(--color-neutral-50));stroke-width:2;cursor:pointer}
+.weight-chart .chart-dot:focus{outline:none;stroke:currentColor;stroke-width:4}
+.weight-chart__detail{min-height:2.5rem;padding:.6rem;background:rgb(var(--color-primary-500)/.12);border-radius:.4rem}
+.weight-chart__scroll{overflow-x:auto}
+.weight-chart table{width:100%;min-width:230px}
+.weight-chart th,.weight-chart td{padding:.5rem;text-align:left}

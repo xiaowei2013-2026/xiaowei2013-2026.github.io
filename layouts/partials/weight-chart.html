@@ -1,0 +1,14 @@
+{{ $css := resources.Get "css/weight-chart.css" | minify | fingerprint }}
+{{ $js := resources.Get "js/weight-chart.js" | minify | fingerprint }}
+{{ $records := hugo.Data.weight_records | default slice }}
+<link rel="stylesheet" href="{{ $css.RelPermalink }}">
+<section class="weight-chart" aria-label="体重记录">
+  <h2>体重变化</h2>
+  <p>横轴为测量时间，纵轴为体重（斤）。选择数据点查看数值。</p>
+  <p data-status role="status" aria-live="polite"></p>
+  <svg data-plot role="img" aria-label="体重随时间变化的折线图" viewBox="0 0 900 360"></svg>
+  <p class="weight-chart__detail" data-detail aria-live="polite"></p>
+  <details><summary>查看全部记录</summary><div class="weight-chart__scroll"><table><thead><tr><th>时间（北京时间）</th><th>体重（斤）</th></tr></thead><tbody data-rows></tbody></table></div></details>
+  <script type="application/json" data-records>{{ $records | jsonify | safeJS }}</script>
+</section>
+<script src="{{ $js.RelPermalink }}" defer></script>

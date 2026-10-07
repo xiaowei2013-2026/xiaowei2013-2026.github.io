@@ -21,6 +21,8 @@ module:
       target: data/reading_records.json
     - source: content/english/recitation/recitation-records.json
       target: data/recitation_records.json
+    - source: content/other/health/weight-records.json
+      target: data/weight_records.json
 
 pagination:
   pagerSize: 12
