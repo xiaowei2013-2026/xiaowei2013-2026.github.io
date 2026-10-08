@@ -2,7 +2,7 @@
 title: "说话太重容易伤人"
 slug: "06"
 date: 2026-10-06T08:30:00+08:00
-tags: ["123"]
+tags: ["冲动"]
 draft: false
 # false 表示正文顶部不额外显示封面图
 showHero: false

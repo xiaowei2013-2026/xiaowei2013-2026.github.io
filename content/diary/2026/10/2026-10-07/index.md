@@ -2,7 +2,7 @@
 title: "一定要多与人沟通"
 slug: "07"
 date: 2026-10-07T21:00:00+08:00
-tags: ["123"]
+tags: ["情报"]
 draft: false
 # false 表示正文顶部不额外显示封面图
 showHero: false
