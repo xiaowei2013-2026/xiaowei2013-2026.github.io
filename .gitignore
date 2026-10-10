@@ -6,3 +6,6 @@
 *.anki21
 collection.media/
 __pycache__/
+
+# Local-only diary; keep it available to the local Hugo preview.
+/content/diary/2026/10/2026-10-09/
